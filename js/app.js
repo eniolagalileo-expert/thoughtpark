@@ -1,12 +1,27 @@
 // Screens and event handling for ThoughtPark.
 import {
-  emptyState, addThought, releaseThought, parkThought, MAX_LENGTH,
+  addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
+  load, save, MAX_LENGTH,
 } from './store.js';
 
 const screen = document.getElementById('screen');
+const toggle = document.getElementById('mode-toggle');
+const themeColor = document.querySelector('meta[name="theme-color"]');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-let state = emptyState();
+// localStorage can throw on access in some privacy modes, so reach it lazily.
+const storage = {
+  getItem: (k) => window.localStorage.getItem(k),
+  setItem: (k, v) => window.localStorage.setItem(k, v),
+};
+
+let state = load(storage);
+let mode = modeForHour(new Date().getHours());
+
+function commit(next) {
+  state = next;
+  save(storage, state);
+}
 
 // Read the animation length from CSS so JS and CSS stay in sync.
 function cssDuration(name) {
@@ -24,6 +39,24 @@ function el(tag, props = {}, children = []) {
 function openCount() {
   return state.parked.filter((t) => !t.done).length;
 }
+
+// ---- Mode: night or morning -----------------------------------------------
+
+function setMode(next) {
+  mode = next;
+  document.body.dataset.theme = mode;
+  themeColor.content = mode === 'night' ? '#0e1424' : '#f7efe4';
+  for (const button of toggle.querySelectorAll('button')) {
+    button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  }
+  if (mode === 'night') renderNight();
+  else renderMorning();
+}
+
+toggle.addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-mode]');
+  if (button && button.dataset.mode !== mode) setMode(button.dataset.mode);
+});
 
 // ---- Night screen ---------------------------------------------------------
 
@@ -49,7 +82,7 @@ function renderNight() {
     event.preventDefault();
     const result = addThought(state, input.value);
     if (!result.thought) return;
-    state = result.state;
+    commit(result.state);
     list.prepend(cardFor(result.thought));
     input.value = '';
     input.focus();
@@ -85,11 +118,11 @@ function cardFor(thought) {
   card.dataset.id = thought.id;
 
   release.addEventListener('click', () => {
-    state = releaseThought(state, thought.id).state;
+    commit(releaseThought(state, thought.id).state);
     animateOut(card, 'is-releasing', '--release-ms');
   });
   park.addEventListener('click', () => {
-    state = parkThought(state, thought.id).state;
+    commit(parkThought(state, thought.id).state);
     animateOut(card, 'is-parking', '--park-ms');
     updateCounter(true);
   });
@@ -113,4 +146,50 @@ function updateCounter(bump) {
   }
 }
 
-renderNight();
+// ---- Morning screen -------------------------------------------------------
+
+function renderMorning() {
+  const list = el('ul', { className: 'checklist is-entering', id: 'morning-list' });
+  for (const thought of morningList(state)) list.append(checkItemFor(thought));
+
+  const toNight = el('button', {
+    type: 'button',
+    className: 'link-button',
+    textContent: 'Park new thoughts',
+  });
+  toNight.addEventListener('click', () => setMode('night'));
+
+  screen.replaceChildren(
+    el('h1', { className: 'screen-title', textContent: 'Good morning' }),
+    el('p', { className: 'screen-sub', textContent: 'Here’s what you parked last night.' }),
+    list,
+    toNight,
+  );
+}
+
+function checkItemFor(thought) {
+  const button = el('button', { type: 'button', className: 'check-item' }, [
+    el('span', { className: 'check-box' }),
+    el('span', { className: 'check-text', textContent: thought.text }),
+  ]);
+  button.setAttribute('role', 'checkbox');
+  button.setAttribute('aria-checked', String(thought.done));
+  button.addEventListener('click', () => {
+    commit(toggleDone(state, thought.id));
+    renderMorningList();
+  });
+  const item = el('li', { className: thought.done ? 'is-done' : '' }, button);
+  item.dataset.id = thought.id;
+  return item;
+}
+
+// Re-render just the list, keeping focus on the item that was tapped.
+function renderMorningList() {
+  const list = document.getElementById('morning-list');
+  list.classList.remove('is-entering');
+  const focusedId = document.activeElement?.closest('li')?.dataset.id;
+  list.replaceChildren(...morningList(state).map(checkItemFor));
+  if (focusedId) list.querySelector(`li[data-id="${focusedId}"] button`)?.focus();
+}
+
+setMode(mode);

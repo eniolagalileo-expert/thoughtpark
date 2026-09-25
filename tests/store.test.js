@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
+  toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -56,4 +57,83 @@ test('state is never mutated in place', () => {
   const before = emptyState();
   addThought(before, 'hello');
   assert.deepEqual(before, emptyState());
+});
+
+// ---- Slice 2: morning handoff and saving ---------------------------------
+
+function memoryStorage() {
+  const data = new Map();
+  return {
+    getItem: (k) => (data.has(k) ? data.get(k) : null),
+    setItem: (k, v) => data.set(k, String(v)),
+  };
+}
+
+function withParked(...texts) {
+  let state = emptyState();
+  texts.forEach((text, i) => {
+    const added = addThought(state, text, i);
+    state = parkThought(added.state, added.thought.id, 100 + i).state;
+  });
+  return state;
+}
+
+test('modeForHour switches at 5 am and 5 pm', () => {
+  assert.equal(modeForHour(4), 'night');
+  assert.equal(modeForHour(5), 'morning');
+  assert.equal(modeForHour(16), 'morning');
+  assert.equal(modeForHour(17), 'night');
+  assert.equal(modeForHour(0), 'night');
+  assert.equal(modeForHour(23), 'night');
+});
+
+test('toggleDone checks and unchecks a parked thought', () => {
+  const state = withParked('a');
+  const id = state.parked[0].id;
+  assert.equal(toggleDone(state, id).parked[0].done, true);
+  assert.equal(toggleDone(toggleDone(state, id), id).parked[0].done, false);
+});
+
+test('morningList shows open items newest first, then checked items', () => {
+  let state = withParked('oldest', 'middle', 'newest');
+  const middle = state.parked.find((t) => t.text === 'middle').id;
+  state = toggleDone(state, middle);
+  assert.deepEqual(morningList(state).map((t) => t.text), ['newest', 'oldest', 'middle']);
+});
+
+test('parking a new thought clears items checked off in the morning', () => {
+  let state = withParked('done already', 'still open');
+  state = toggleDone(state, state.parked.find((t) => t.text === 'done already').id);
+  const added = addThought(state, 'new tonight');
+  state = parkThought(added.state, added.thought.id).state;
+  assert.deepEqual(state.parked.map((t) => t.text).sort(), ['new tonight', 'still open']);
+  assert.equal(clearDone(state).parked.length, 2);
+});
+
+test('save then load round-trips pending and parked thoughts', () => {
+  const storage = memoryStorage();
+  let state = withParked('parked one');
+  state = addThought(state, 'not parked yet').state;
+  assert.equal(save(storage, state), true);
+  const loaded = load(storage);
+  assert.deepEqual(loaded.parked.map((t) => t.text), ['parked one']);
+  assert.deepEqual(loaded.pending.map((t) => t.text), ['not parked yet']);
+});
+
+test('load returns an empty state for missing or corrupted data', () => {
+  const storage = memoryStorage();
+  assert.deepEqual(load(storage), emptyState());
+  storage.setItem(STORAGE_KEY, '{not json');
+  assert.deepEqual(load(storage), emptyState());
+  assert.deepEqual(parseState('"a string"'), emptyState());
+  assert.deepEqual(parseState('{"pending":[{"nope":1}],"parked":"bad"}'), emptyState());
+});
+
+test('save and load survive a storage that throws', () => {
+  const broken = {
+    getItem() { throw new Error('blocked'); },
+    setItem() { throw new Error('blocked'); },
+  };
+  assert.equal(save(broken, emptyState()), false);
+  assert.deepEqual(load(broken), emptyState());
 });

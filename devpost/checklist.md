@@ -19,7 +19,7 @@ Build mode: fast (learner approved)
   Learner check: Open the app, type three thoughts, let one go and park two. You should see the released one drift away and the counter show 2.
   Commit: `Add night screen: add, park, and release thoughts`
 
-- [ ] **2. Parked thoughts are waiting in the morning**
+- [x] **2. Parked thoughts are waiting in the morning**
   Becomes usable: Close and reopen the browser, switch to Morning, and your "Tomorrow" thoughts appear as a checklist on a dawn-colored screen; check one off and it moves to the bottom and fades.
   Why now: The night-to-morning handoff is the other half of the kernel and depends on saving working correctly, which is the riskiest assumption left.
   PRD ref: `prd.md > The Core Journey` (steps 7–9), `prd.md > Morning list`, `prd.md > Screens and Layout`, `prd.md > States and Boundaries` (Persistence, Unfinished parking)

@@ -33,7 +33,8 @@ export function releaseThought(state, id) {
   return { state: { ...state, pending: state.pending.filter((t) => t.id !== id) }, thought };
 }
 
-// "Tomorrow": moved from pending to parked.
+// "Tomorrow": moved from pending to parked. Parking a new thought also clears
+// anything already checked off in the morning, so the list starts fresh each night.
 export function parkThought(state, id, now = Date.now()) {
   const thought = state.pending.find((t) => t.id === id) ?? null;
   if (!thought) return { state, thought: null };
@@ -42,8 +43,75 @@ export function parkThought(state, id, now = Date.now()) {
     state: {
       ...state,
       pending: state.pending.filter((t) => t.id !== id),
-      parked: [parked, ...state.parked],
+      parked: [parked, ...clearDone(state).parked],
     },
     thought: parked,
   };
+}
+
+// Morning check-off, toggled so a mis-tap can be reversed.
+export function toggleDone(state, id) {
+  return {
+    ...state,
+    parked: state.parked.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+  };
+}
+
+export function clearDone(state) {
+  return { ...state, parked: state.parked.filter((t) => !t.done) };
+}
+
+// Morning order: open items newest first, then checked-off items.
+export function morningList(state) {
+  const byNewest = (a, b) => b.parkedAt - a.parkedAt;
+  const open = state.parked.filter((t) => !t.done).sort(byNewest);
+  const done = state.parked.filter((t) => t.done).sort(byNewest);
+  return [...open, ...done];
+}
+
+// Morning is 5:00 am up to (not including) 5:00 pm; night is the rest.
+export function modeForHour(hour) {
+  return hour >= 5 && hour < 17 ? 'morning' : 'night';
+}
+
+// ---- Saving on the device -------------------------------------------------
+
+function isThought(t) {
+  return t && typeof t.id === 'string' && typeof t.text === 'string';
+}
+
+// Accepts anything read from storage and returns a valid state.
+export function parseState(raw) {
+  try {
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return emptyState();
+    return {
+      pending: Array.isArray(data.pending) ? data.pending.filter(isThought) : [],
+      parked: Array.isArray(data.parked)
+        ? data.parked.filter(isThought).map((t) => ({ ...t, done: Boolean(t.done) }))
+        : [],
+      seenHint: Boolean(data.seenHint),
+    };
+  } catch {
+    return emptyState();
+  }
+}
+
+export function load(storage) {
+  try {
+    const raw = storage.getItem(STORAGE_KEY);
+    return raw == null ? emptyState() : parseState(raw);
+  } catch {
+    return emptyState();
+  }
+}
+
+// Returns false when the browser won't let us save.
+export function save(storage, state) {
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch {
+    return false;
+  }
 }
