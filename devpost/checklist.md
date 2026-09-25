@@ -39,7 +39,27 @@ Build mode: fast (learner approved)
   Learner check: Park your last thought and read the Goodnight screen; then let a thought go and press Undo before it disappears.
   Commit: `Add goodnight screen, undo, and empty states`
 
-- [ ] **4. It looks and feels finished, and anyone can run it**
+- [ ] **4. Your thoughts become stars, and prompts help you empty your mind**
+  Becomes usable: A night sky sits behind the Night and Goodnight screens; each parked thought is a star that stays in place, letting a thought go sends a shooting star, switching to Morning plays a sunrise; when you stop typing, gentle prompts appear under the box.
+  Why now: Learner-approved improvements that build on the working journey from slices 1–3 (star positions depend on saved parked thoughts, and the shooting star hooks into release and undo).
+  PRD ref: `prd.md > Night sky`, `prd.md > Gentle prompts`
+  Spec ref: `spec.md > Night sky (js/sky.js)`, `spec.md > Gentle prompts (js/app.js → prompt timer)`, `spec.md > Look and Feel`
+  Build: `js/sky.js` with decorative stars, `renderSky`, `shootingStar`, `sunrise`; `starPosition(id)`, `PROMPTS`, `promptAt(n)` in `store.js`; wire sky updates into park, release, undo, and mode switch; prompt idle timer on the Night screen; reduced-motion versions.
+  Verify (mechanical): unit tests for `starPosition` (stable, inside bounds) and `promptAt` (cycles); headless browser: parking two thoughts shows two bright stars at the same positions after reload; releasing creates a shooting-star element that is removed afterwards; undo updates the star count; after 6 idle seconds a prompt is visible and typing hides it; switching to Morning hides the stars; no console errors.
+  Learner check: Park a few thoughts and watch stars appear; let one go and watch the shooting star; then wait without typing and read the prompt.
+  Commit: `Add night sky stars and gentle prompts`
+
+- [ ] **5. One minute of breathing before sleep**
+  Becomes usable: From the Goodnight screen, "Breathe for a minute" runs a 60-second breathe-in/breathe-out circle, then dims to a near-black "Goodnight."
+  Why now: Completes the night journey after Goodnight exists (slice 3); independent of the sky.
+  PRD ref: `prd.md > Breathing moment`, `prd.md > The Core Journey` (step 6a)
+  Spec ref: `spec.md > Breathing moment (renderBreathing)`
+  Build: `breathPhase(elapsedMs)` in `store.js`; breathing view with circle, label, time remaining, Stop; end overlay; reduced-motion behavior.
+  Verify (mechanical): unit tests for `breathPhase` at 0, 3.9 s, 4 s, 9.9 s, 10 s, 59.9 s, and 60 s (phase, cycle, done); headless browser with a sped-up clock: the label alternates, Stop returns to Goodnight, and the end overlay appears after the full minute; no console errors.
+  Learner check: Park your last thought, tap "Breathe for a minute", follow a few breaths, then press Stop.
+  Commit: `Add one-minute breathing moment`
+
+- [ ] **6. It looks and feels finished, and anyone can run it**
   Becomes usable: A polished, phone-friendly app with reduced-motion support, plus a README, license, and screenshots so judges understand and run it.
   Why now: Design is a judging criterion, and polish is safest once all behavior works.
   PRD ref: `prd.md > Look and Feel`, `prd.md > What We're Building`
@@ -51,7 +71,7 @@ Build mode: fast (learner approved)
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2 (night parking and morning handoff both working)
+- [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
@@ -71,3 +91,5 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- Added slices 4 (night sky and gentle prompts) and 5 (breathing moment); polish became slice 6 — at the first checkpoint the learner asked to improve the idea and approved three additions, recorded in `scope.md`, `prd.md`, and `spec.md`.

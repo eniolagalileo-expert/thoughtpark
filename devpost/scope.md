@@ -21,7 +21,7 @@ Morning: open it → see last night's "Tomorrow" list, ready to act on.
 Why they come back: the thoughts they parked were actually waiting for them, so it becomes safe to let them go at night.
 
 ## Inspiration & Identity
-The learner asked for a mix of three ideas: a brain-dump pad (the core), a guided wind-down, and a sleep log. Feel: calm, dark, low-light night screens; minimal text; gentle animation when a thought is released. Nothing bright, busy, or gamified.
+The learner asked for a mix of three ideas: a brain-dump pad (the core), a guided wind-down, and a sleep log. After the first hands-on checkpoint, the learner asked to improve the idea and approved three additions: thoughts shown as stars in a night sky, gentle prompts when stuck, and a 60-second breathing moment. Feel: calm, dark, low-light night screens; minimal text; gentle animation when a thought is released. Nothing bright, busy, or gamified.
 
 ## Why This Matters to the Learner
 A problem they have themselves: racing thoughts keep them from falling asleep quickly and sleeping deeply.
@@ -34,9 +34,11 @@ In a browser: type three thoughts, park two as "Tomorrow" and let one go (it gen
 - "All parked" goodnight screen
 - Morning view: last night's Tomorrow list, with check-off
 - Saved on the device between night and morning (no accounts)
+- Night sky: parked thoughts become stars, released thoughts become shooting stars; sunrise into the morning list (learner-approved improvement)
+- Gentle prompts that appear when the learner stops typing, to help empty the mind (learner-approved improvement)
+- A 60-second breathing moment after "All parked" (idea A, moved in from Later by the learner)
 
 ## Later
-- Guided 2-minute wind-down after parking (idea A)
 - One-tap morning sleep rating and a view of which nights went well (idea C)
 - Optional AI suggestions for sorting or rephrasing worries
 - Voice input for thoughts

@@ -18,8 +18,9 @@ Source: `scope.md > The Core Loop`.
 3. Each card has two buttons: **Tomorrow** and **Let it go**.
 4. Tapping **Let it go** makes the card slowly fade and drift away, then it's gone for good.
 5. Tapping **Tomorrow** makes the card slide into a small "Parked for tomorrow" count at the bottom of the screen.
-6. When no unparked cards are left (and at least one thought was parked), the Goodnight screen appears: "All parked. Goodnight." with the number of thoughts released and parked.
-7. **Morning.** When the user opens ThoughtPark in the morning, the Morning screen shows "Good morning" and last night's Tomorrow thoughts as a checklist.
+6. When no unparked cards are left (and at least one thought was parked), the Goodnight screen appears: "All parked. Goodnight." with the number of thoughts released and parked, over the night sky of their parked stars.
+6a. Optional: they tap "Breathe for a minute" for a 60-second guided breathing animation, after which the screen dims to near-black.
+7. **Morning.** When the user opens ThoughtPark in the morning, a soft sunrise fades the stars away and the Morning screen shows "Good morning" and last night's Tomorrow thoughts as a checklist.
 8. They check items off as they deal with them. Checked items move to the bottom and fade.
 9. Success: the thoughts they parked at night were really waiting for them in the morning, so parking them at night felt safe.
 
@@ -57,6 +58,32 @@ Source: `scope.md > The Unique Kernel`.
   - [ ] Tomorrow: the card slides away and the "Parked for tomorrow" count goes up by one.
   - [ ] **Undo (proposed):** right after either action, a small "Undo" appears for 5 seconds and restores the card.
 
+### Night sky
+Added after the first checkpoint at the learner's request (Innovation, Design).
+- As someone parking thoughts, I want to see them become something calm and beautiful, so letting go feels good.
+  - [ ] Behind the Night and Goodnight screens, a dark sky shows faint decorative stars plus one brighter star for each open parked thought.
+  - [ ] Parking a thought adds its star with a gentle twinkle-in; the star keeps the same position every time the app opens.
+  - [ ] Letting a thought go sends a shooting star across the sky that disappears.
+  - [ ] Undo restores the sky to match (the star returns or disappears).
+  - [ ] Switching to Morning plays a short sunrise: the sky warms and the stars fade as the checklist appears.
+  - [ ] With reduced motion, stars appear and disappear without movement.
+
+### Gentle prompts
+Added after the first checkpoint at the learner's request (Impact).
+- As someone whose mind feels full but can't name what's in it, I want a gentle nudge so I can empty my head completely.
+  - [ ] When the text box is empty and the user hasn't typed for 6 seconds, a soft prompt appears under the box (for example "Anything about work?").
+  - [ ] A new prompt replaces it every 6 seconds while the box stays empty and untouched, cycling through a fixed list.
+  - [ ] Typing hides the prompt immediately.
+
+### Breathing moment
+Idea A from scope, moved into the POC by the learner (Impact).
+- As someone who has parked everything, I want one minute of calm breathing so I fall asleep more easily.
+  - [ ] The Goodnight screen has a "Breathe for a minute" button.
+  - [ ] It shows a circle that grows while "Breathe in" (4 seconds) and shrinks while "Breathe out" (6 seconds), six times, with a small time-remaining display.
+  - [ ] A "Stop" button returns to the Goodnight screen at any time.
+  - [ ] After one minute the screen dims to near-black with "Goodnight"; tapping it returns to the Goodnight screen.
+  - [ ] With reduced motion the circle doesn't scale; only the words change.
+
 ### Goodnight
 - [ ] When the last unparked card is parked, the Goodnight screen appears with the correct counts.
 - [ ] "Add another thought" returns to the Night screen with an empty box.
@@ -81,17 +108,20 @@ Source: `scope.md > What "Working" Looks Like`.
 - **Brain dump first; wind-down and sleep rating later** — learner asked for a mix of three ideas; the approved scope keeps the brain dump as the core.
 - **Time-of-day switching with a manual toggle** (proposed) — feels automatic in real use; the toggle makes the demo possible without waiting for morning.
 - **Undo for 5 seconds** (proposed) — tapping the wrong button half-asleep is likely.
+- **Night sky, gentle prompts, and a 60-second breathing moment** — the learner asked to improve the idea after trying the first build and approved these three additions; they strengthen the design and impact without adding accounts, servers, or keys.
 
 ## What We're Building
 - Night screen: add thoughts, park each as Tomorrow or Let it go, with the fade animation and undo
 - Goodnight screen with counts
 - Morning screen: checklist of parked thoughts with check-off
 - Time-of-day screen choice plus a manual Night/Morning toggle
+- Night sky with stars, shooting stars, and sunrise
+- Gentle prompts when the user stops typing
+- 60-second breathing moment after Goodnight
 - Saving on the device between sessions
 - Night and morning visual themes
 
 ## Deferred From the POC
-- **Guided wind-down after parking** (scope idea A) — adds a second flow; the kernel works without it.
 - **Morning sleep rating and history** (scope idea C) — needs charts and several days of data to show value.
 - **AI help sorting or rephrasing thoughts** — needs an API key and adds cost.
 - **Syncing across devices** — would need accounts and a backend.

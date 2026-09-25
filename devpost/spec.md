@@ -74,6 +74,18 @@ PRD ref: `prd.md > Morning list`, `prd.md > States and Boundaries`.
 Chooses Night or Morning from `modeForHour(new Date().getHours())` on load; a small "Night / Morning" toggle in the top corner overrides it for the session and switches `data-theme`.
 PRD ref: `prd.md > Screens and Layout`.
 
+### Night sky (`js/sky.js`)
+A fixed, full-screen layer behind the content (`<div id="sky">`), drawn with plain DOM elements and CSS animation, not a canvas. Holds ~40 faint decorative stars (fixed seed) and one bright star per open parked thought. Star positions come from `starPosition(id)` in `store.js`, a hash of the thought's id, so each star stays put between visits. Exposes `renderSky(parked)`, `shootingStar()`, and `sunrise()`. Hidden in the morning theme after the sunrise transition.
+PRD ref: `prd.md > Night sky`.
+
+### Gentle prompts (`js/app.js` → prompt timer)
+A 6-second idle timer on the Night screen. When the text box is empty and untouched, shows `promptAt(n)` from the fixed `PROMPTS` list in `store.js` under the box and advances every 6 seconds; any input hides it and resets the timer. Timer is cleared when leaving the Night screen.
+PRD ref: `prd.md > Gentle prompts`.
+
+### Breathing moment (`renderBreathing`)
+Full-screen view started from Goodnight. Uses `breathPhase(elapsedMs)` from `store.js` (4 s in, 6 s out, 6 cycles = 60 s) on a `requestAnimationFrame` loop to set the label, the remaining seconds, and the circle's scale. Stop returns to Goodnight; the end state is a near-black "Goodnight" overlay.
+PRD ref: `prd.md > Breathing moment`.
+
 ### Undo toast
 After release or park, shows "Released · Undo" or "Parked · Undo" for 5 seconds; Undo calls `restore()`. Only the most recent action can be undone.
 PRD ref: `prd.md > Parking thoughts (the kernel)`.
@@ -102,8 +114,9 @@ build-with-ai/
 ├── css/
 │   └── style.css       # Night/morning themes, layout, cards, animations, reduced motion
 ├── js/
-│   ├── store.js        # Pure data logic + localStorage load/save (tested)
-│   └── app.js          # Screens, event handlers, mode toggle, undo toast
+│   ├── store.js        # Pure data logic, prompts, breathing timing, star positions, load/save (tested)
+│   ├── sky.js          # Night sky layer: stars, shooting stars, sunrise
+│   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing
 ├── tests/
 │   └── store.test.js   # node --test unit tests for store.js
 ├── package.json        # "type": "module", scripts: start, test (no dependencies)
@@ -127,9 +140,11 @@ build-with-ai/
 - **Clock-based mode with a toggle** instead of detecting the user's real bedtime and wake time — the toggle proves the handoff; learning a schedule would need history and settings.
 - **`localStorage` on one device** instead of an account with sync — the kernel is the nightly park-and-return, which works on one device. Sync would need auth and a backend.
 - **Single-level undo** instead of full history — covers the half-asleep mis-tap the PRD cares about.
+- **DOM + CSS stars** instead of a canvas or WebGL scene — a few dozen elements animate smoothly, stay accessible to `prefers-reduced-motion`, and need no library.
 
 ## Decisions and Open Issues
 - **Plain HTML/CSS/JS with `localStorage`** — agent recommendation, accepted by the learner's approval of this spec. Tradeoff: hand-written rendering instead of a framework's components.
 - **GitHub Pages deploy** — agent recommendation, optional; decided in `6-ship`.
+- **Night sky, gentle prompts, breathing moment** — learner-approved additions after the first checkpoint; implemented with the same no-framework stack.
 - **Learner uncertainty:** none identified. The learner asked the agent to proceed without further questions, so no uncertainty was explored; noted rather than invented.
 - **Open:** none. `prd.md > Open Questions` had nothing blocking.
