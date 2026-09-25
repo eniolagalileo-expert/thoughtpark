@@ -3,7 +3,8 @@ import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
   setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
-  addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, lastNightKey, rateNight, nightDetails, MAX_LENGTH,
+  addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, lastNightKey, rateNight, nightDetails,
+  recurringWorries, dismissRecurring, setRecurringPlan, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
@@ -251,6 +252,7 @@ function renderNight({ keepSession = false } = {}) {
   screen.replaceChildren(
     el('h1', { className: 'screen-title', textContent: 'Park your thoughts for tonight' }),
     howItWorks(),
+    recurringCard(),
     form,
     hint,
     voiceStatus,
@@ -614,7 +616,7 @@ function renderMorning({ animate = true } = {}) {
   });
   toNight.addEventListener('click', () => setMode('night'));
 
-  const header = [el('h1', { className: 'screen-title', textContent: 'Good morning' }), howItWorks()];
+  const header = [el('h1', { className: 'screen-title', textContent: 'Good morning' }), howItWorks(), recurringCard()];
   if (summaryText) {
     header.push(el('p', { className: 'morning-summary', id: 'morning-summary', textContent: summaryText }));
   }
@@ -729,6 +731,44 @@ function renderMorningList() {
   const focusedId = document.activeElement?.closest('li')?.dataset.id;
   list.replaceChildren(...morningList(state).map(checkItemFor));
   if (focusedId) list.querySelector(`li[data-id="${focusedId}"] .check-item`)?.focus();
+}
+
+// ---- Worries that keep coming back -------------------------------------------
+
+// Shows the most frequent recurring worry, if any. Renders nothing otherwise.
+function recurringCard() {
+  const card = el('section', { className: 'recurring-card', id: 'recurring-card' });
+  const render = () => {
+    const [worry] = recurringWorries(state);
+    card.hidden = !worry;
+    if (!worry) { card.replaceChildren(); return; }
+    const plan = el('button', { type: 'button', className: 'talk-button recurring-plan' }, [
+      el('span', { className: 'talk-icon', textContent: '✦' }), worry.plan ? 'Update the plan' : 'Make a daytime plan',
+    ]);
+    const later = el('button', { type: 'button', className: 'inline-link recurring-later', textContent: 'Not now' });
+    plan.addEventListener('click', () => {
+      const list = worry.examples.map((e) => `"${e}"`).join(', ');
+      openTalk({
+        thought: { text: `“${worry.word}” came up on ${worry.nights} of the last 14 nights, for example ${list}.`, label: `“${worry.word}” keeps coming back: ${worry.examples.join(' · ')}` },
+        mode: 'daytime',
+        onSave: (note) => { commit(setRecurringPlan(state, worry.word, note)); render(); },
+      });
+    });
+    later.addEventListener('click', () => { commit(dismissRecurring(state, worry.word)); render(); });
+    card.replaceChildren(
+      el('p', { className: 'recurring-label', textContent: 'This keeps coming back' }),
+      el('p', { className: 'recurring-word' }, [
+        el('strong', { textContent: worry.word }),
+        ` · ${worry.nights} of the last 14 nights`,
+      ]),
+      el('ul', { className: 'recurring-examples' }, worry.examples.map((e) => el('li', { textContent: e }))),
+      ...(worry.plan ? [el('p', { className: 'recurring-plan-note', textContent: worry.plan })] : []),
+      el('p', { className: 'recurring-hint', textContent: 'Worries that return every night are easier to handle in daylight.' }),
+      el('div', { className: 'recurring-actions' }, [plan, later]),
+    );
+  };
+  render();
+  return card;
 }
 
 // ---- Sleep rating -------------------------------------------------------------

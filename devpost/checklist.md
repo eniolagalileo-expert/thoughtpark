@@ -149,7 +149,7 @@ Build mode: fast (learner approved)
   Learner check: Rate your sleep, then open the calendar's insights.
   Commit: `Add sleep rating and weekly insights`
 
-- [ ] **15. Worries that keep coming back**
+- [x] **15. Worries that keep coming back**
   Becomes usable: A card on both screens when the same worry word appears on 3+ nights in 14; daytime plan via Talk it through; Not now.
   Why now: Uses the calendar history.
   PRD ref: `prd.md > More ideas (learner-approved batch)`
@@ -228,3 +228,4 @@ Activity mode:
 - Added slice 11 (dream journal) at the learner's request during final review.
 - Added slice 12 (calendar) at the learner's request during final review.
 - Added slices 13–18 (six more ideas) at the learner's request during final review.
+- Recurring worries are grouped: a key word whose thoughts are already covered by another card (shown or hidden) is skipped, so "passport renewal" makes one card — found by the unit test.

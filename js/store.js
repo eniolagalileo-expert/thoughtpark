@@ -5,7 +5,7 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [], history: {} };
+  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [], history: {}, recurring: {} };
 }
 
 // Only counts are kept about last night, never the released text.
@@ -137,6 +137,7 @@ export function parseState(raw) {
       night: parseNight(data.night),
       dreams: parseDreams(data.dreams),
       history: parseHistory(data.history),
+      recurring: parseRecurring(data.recurring),
     };
   } catch {
     return emptyState();
@@ -673,4 +674,58 @@ export function weekSummary(state, endKey) {
 
 export function weekHasData(summary) {
   return summary.nights.some((n) => n.parked || n.letGoAtNight || n.sleepTools.length || n.sleepRating || n.goodThings.length || n.dream);
+}
+
+// ---- Worries that keep coming back ---------------------------------------------
+
+export const RECURRING_MIN_NIGHTS = 3;
+export const RECURRING_WINDOW_NIGHTS = 14;
+const HIDE_RECURRING_MS = 7 * 864e5;
+
+// Key words parked on 3+ different nights in the last 14, with a few recent
+// examples, skipping any the person hid for now.
+export function recurringWorries(state, now = Date.now()) {
+  const endKey = nightKey(now);
+  const found = [];
+  // Thoughts already covered by a card (shown or hidden), so "passport
+  // renewal" makes one card, not one for each word.
+  const covered = new Set();
+  for (const { word, nights } of wordNights(state, endKey, RECURRING_WINDOW_NIGHTS)) {
+    if (nights < RECURRING_MIN_NIGHTS) break;
+    const matching = [];
+    for (let i = 0; i < RECURRING_WINDOW_NIGHTS; i += 1) {
+      const day = state.history?.[shiftKey(endKey, -i)];
+      for (const t of day?.parked ?? []) if (keyWords(t.text).includes(word)) matching.push(t);
+    }
+    if (matching.every((t) => covered.has(t.id))) continue;
+    for (const t of matching) covered.add(t.id);
+    const info = state.recurring?.[word];
+    if (info?.hiddenUntil && info.hiddenUntil > now) continue;
+    const examples = [...new Set(matching.map((t) => t.text))].slice(0, 3);
+    found.push({ word, nights, examples, plan: info?.plan ?? null });
+  }
+  return found;
+}
+
+export function dismissRecurring(state, word, now = Date.now()) {
+  return { ...state, recurring: { ...(state.recurring ?? {}), [word]: { ...(state.recurring?.[word] ?? {}), hiddenUntil: now + HIDE_RECURRING_MS } } };
+}
+
+export function setRecurringPlan(state, word, plan) {
+  const clean = cleanText(plan)?.slice(0, MAX_NOTE_LENGTH);
+  if (!clean) return state;
+  return { ...state, recurring: { ...(state.recurring ?? {}), [word]: { ...(state.recurring?.[word] ?? {}), plan: clean } } };
+}
+
+function parseRecurring(recurring) {
+  if (!recurring || typeof recurring !== 'object' || Array.isArray(recurring)) return {};
+  const clean = {};
+  for (const [word, info] of Object.entries(recurring)) {
+    if (!/^[a-z]{3,40}$/.test(word) || !info || typeof info !== 'object') continue;
+    const entry = {};
+    if (Number.isFinite(info.hiddenUntil)) entry.hiddenUntil = info.hiddenUntil;
+    if (typeof info.plan === 'string' && info.plan.trim()) entry.plan = info.plan.slice(0, MAX_NOTE_LENGTH);
+    clean[word] = entry;
+  }
+  return clean;
 }

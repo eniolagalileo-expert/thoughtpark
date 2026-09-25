@@ -10,6 +10,7 @@ import {
   dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
   startSleepAid, updateSleepAid, endSleepAid, addGoodThing, goodThingsTonight, MAX_GOOD_THINGS,
   lastNightKey, rateNight, ratingStats, keyWords, wordNights, weekSummary, weekHasData,
+  recurringWorries, dismissRecurring, setRecurringPlan,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -545,4 +546,50 @@ test('weekSummary counts the week without thought text', () => {
   assert.equal(weekHasData(summary), true);
   assert.equal(weekHasData(weekSummary(emptyState(), '2026-09-24')), false);
   assert.deepEqual(wordNights(state, '2026-09-24', 7)[0], { word: 'passport', nights: 2 });
+});
+
+// ---- Worries that keep coming back ----------------------------------------------
+
+function parkOn(state, text, day) {
+  const added = addThought(state, text, at(day, 22));
+  return parkThought(added.state, added.thought.id, at(day, 22)).state;
+}
+
+test('a worry parked on three different nights is noticed', () => {
+  let state = emptyState();
+  state = parkOn(state, 'What if the presentation goes badly?', 20);
+  state = parkOn(state, 'Presentation slides not finished', 22);
+  state = parkOn(state, 'Buy milk', 22);
+  assert.deepEqual(recurringWorries(state, at(24, 23)), []);
+  state = parkOn(state, 'Practice the presentation', 24);
+  const [worry] = recurringWorries(state, at(24, 23));
+  assert.equal(worry.word, 'presentation');
+  assert.equal(worry.nights, 3);
+  assert.deepEqual(worry.examples, ['Practice the presentation', 'Presentation slides not finished', 'What if the presentation goes badly?']);
+});
+
+test('the same night twice only counts once, and old nights drop out', () => {
+  let state = emptyState();
+  state = parkOn(state, 'Email the landlord', 5);
+  state = parkOn(state, 'Landlord again', 5);
+  state = parkOn(state, 'Call the landlord', 22);
+  state = parkOn(state, 'Landlord deposit', 24);
+  assert.deepEqual(recurringWorries(state, at(24, 23)), []);
+  state = parkOn(state, 'Landlord still not replied', 23);
+  assert.equal(recurringWorries(state, at(24, 23))[0].nights, 3);
+});
+
+test('Not now hides a worry for a week, and a plan is kept', () => {
+  let state = emptyState();
+  for (const day of [20, 22, 24]) state = parkOn(state, 'passport renewal', day);
+  state = setRecurringPlan(state, 'passport', 'Saturday 10 am: fill in the form');
+  assert.equal(recurringWorries(state, at(24, 23))[0].plan, 'Saturday 10 am: fill in the form');
+  assert.deepEqual(recurringWorries(state, at(24, 23)).map((w) => w.word), ['passport']);
+  state = dismissRecurring(state, 'passport', at(24, 23));
+  assert.deepEqual(recurringWorries(state, at(24, 23)), []);
+  assert.deepEqual(recurringWorries(state, at(24, 23) + 8 * 864e5).map((w) => w.word), ['passport']);
+  const storage = memoryStorage();
+  save(storage, state);
+  assert.equal(load(storage).recurring.passport.plan, 'Saturday 10 am: fill in the form');
+  assert.deepEqual(parseState('{"recurring":{"BAD WORD":{},"okay":{"plan":5}}}').recurring, { okay: {} });
 });

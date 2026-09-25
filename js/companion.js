@@ -92,17 +92,17 @@ export function openTalk({ thought, mode, onSave }) {
   const save = el('button', {
     type: 'button',
     className: 'btn btn-primary talk-save',
-    textContent: mode === 'morning' ? 'Save this note' : 'Park with this note',
+    textContent: { morning: 'Save this note', daytime: 'Save this plan' }[mode] ?? 'Park with this note',
   });
   const close = el('button', { type: 'button', className: 'btn btn-quiet', textContent: 'Close' });
   close.addEventListener('click', () => talkDialog.close());
 
   talkDialog.replaceChildren(
     el('header', { className: 'sheet-header' }, [
-      el('h2', { id: 'talk-title', className: 'sheet-title', textContent: 'Talk it through' }),
+      el('h2', { id: 'talk-title', className: 'sheet-title', textContent: mode === 'daytime' ? 'Make a daytime plan' : 'Talk it through' }),
       closeButton(talkDialog),
     ]),
-    el('blockquote', { className: 'talk-thought', textContent: thought.text }),
+    el('blockquote', { className: 'talk-thought', textContent: thought.label ?? thought.text }),
     ...(isDemo() ? [demoBanner()] : []),
     messages,
     form,
