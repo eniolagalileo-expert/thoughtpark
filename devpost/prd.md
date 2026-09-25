@@ -167,6 +167,27 @@ Added at the learner's request during final review ("Make the calendar and store
   - [ ] Parking, letting go, checking off, morning let go, notes, and undo all show correctly in that night's entry.
   - [ ] The calendar survives reloading; released thought text never appears in saved data.
 
+### More ideas (learner-approved batch)
+The learner asked "any other ideas like mine?", and approved all six proposals ("add those functions as a code").
+
+**Three good things.** On the Goodnight screen: "One good thing about today" with a small text box; up to three per night, shown on Goodnight and in the calendar. Kept on the device.
+  - [ ] Saved things appear on Goodnight and in that night's calendar entry; a fourth can't be added.
+
+**Sleep rating and weekly insights.** A morning card asks "How did you sleep?" with five moons; the rating is saved on last night and shown in the calendar (and can be changed). In the calendar, "✦ This week's insights" sends a summary of the last seven nights (counts, recurring words, sleep tools and whether they ran to the end, ratings, good things, dream titles; no full thought text) to Claude and shows a headline, two to four observations, and one suggestion. A local line always shows the average rating with and without sleep tools when there is enough data. Demo mode shows a labeled sample.
+  - [ ] Rating persists and shows in the calendar; insights request contains no full thought text.
+
+**Worries that keep coming back.** When the same key word appears in parked thoughts on three or more different nights in the last 14, a card appears on both screens: "This keeps coming back: presentation (4 nights)". "✦ Make a daytime plan" opens Talk it through in daytime mode for that worry and saves the resulting note on the card; "Not now" hides it for 7 days.
+  - [ ] A word parked on three nights shows the card; two nights don't; Not now hides it; the plan note shows on the card.
+
+**Worry time.** A CBT technique: a 15-minute daytime session for worries. "Worry time" on the Morning screen (and suggested at the chosen time of day, default 5 pm, set in Settings) shows unchecked parked thoughts one at a time with Done, Talk it through, Let go, and Next, and a 15-minute countdown. When time is up: "Worry time is over. The rest can wait."
+  - [ ] Actions update the list and calendar outcomes; the session ends at 15 minutes.
+
+**Eyes-closed voice mode.** In Talk it through, "Voice mode" dims the panel almost to black, reads each reply aloud slowly, then listens; what the person says is sent as their reply. The crisis check still runs on everything said. Hidden where speech recognition or speech synthesis is unavailable.
+  - [ ] Replies are spoken, speech is sent after the reply finishes, crisis words show the 988 card.
+
+**Install as an app, with a bedtime reminder.** A web app manifest, icons, and a service worker so ThoughtPark can be installed to the home screen and opens offline (AI features need a connection). Settings has a bedtime (default 10:30 pm): "Remind me while ThoughtPark is open" shows a notification at bedtime if permission is granted, and "Add a daily reminder to my calendar" downloads a repeating calendar event (.ics) with an alert, which works even when the app is closed.
+  - [ ] The page registers a service worker and works offline after one visit; the .ics file has a daily rule at the chosen time.
+
 ### Help me fall asleep
 Added at the learner's request during final review ("You can add an idea which the service can help to fall asleep easily"); the learner asked the agent to choose. The Goodnight screen offers four tools under "Help me fall asleep": Breathe (the existing minute), Mind shuffle, Sleep sounds, and Sleep story.
 

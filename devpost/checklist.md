@@ -129,6 +129,66 @@ Build mode: fast (learner approved)
   Learner check: Open Your calendar and tap today.
   Commit: `Add a calendar of every night`
 
+- [ ] **13. Three good things**
+  Becomes usable: Note up to three good things on the Goodnight screen; they show in the calendar.
+  Why now: Smallest of the batch; its data feeds the weekly insights.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: `addGoodThing` in `store.js`; Goodnight card; calendar line.
+  Verify (mechanical): unit tests; headless browser: add, cap at three, calendar shows them.
+  Learner check: Park a thought, then note one good thing.
+  Commit: `Add three good things`
+
+- [ ] **14. Sleep rating and weekly insights**
+  Becomes usable: Rate last night in the morning; the calendar shows ratings and "This week's insights" from Claude.
+  Why now: Builds on the calendar history.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: `rateNight`, `weekSummary`, `ratingStats` in `store.js`; `weeklyInsights` in `ai.js`; morning rating card; calendar insights.
+  Verify (mechanical): unit tests; headless browser with intercepted API: rating persists and shows, insights request has no thought text, demo, error.
+  Learner check: Rate your sleep, then open the calendar's insights.
+  Commit: `Add sleep rating and weekly insights`
+
+- [ ] **15. Worries that keep coming back**
+  Becomes usable: A card on both screens when the same worry word appears on 3+ nights in 14; daytime plan via Talk it through; Not now.
+  Why now: Uses the calendar history.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: `recurringWorries`, `dismissRecurring`, `setRecurringPlan` in `store.js`; card; Talk daytime mode.
+  Verify (mechanical): unit tests for detection thresholds and stop words; headless browser: card, plan note, Not now.
+  Learner check: See the card after parking the same worry on three nights (seeded).
+  Commit: `Notice worries that keep coming back`
+
+- [ ] **16. Worry time**
+  Becomes usable: A 15-minute session for unfinished worries with Done / Talk / Let go / Next.
+  Why now: Uses morning actions.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: worry time view; worry-time hour setting.
+  Verify (mechanical): headless browser with fast clock: actions update state and calendar; session ends.
+  Learner check: Start Worry time from the Morning screen.
+  Commit: `Add worry time`
+
+- [ ] **17. Eyes-closed voice mode**
+  Becomes usable: Voice mode inside Talk it through.
+  Why now: Extends the chat.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: voice loop in `companion.js`.
+  Verify (mechanical): headless browser with fake speech in and out and intercepted API: reply spoken, then speech sent; crisis words show 988.
+  Learner check: Open Talk it through and turn on Voice mode.
+  Commit: `Add eyes-closed voice mode`
+
+- [ ] **18. Install as an app, with a bedtime reminder**
+  Becomes usable: Installable, works offline, bedtime reminder in-app and as a calendar event.
+  Why now: Last: wraps the finished app.
+  PRD ref: `prd.md > More ideas (learner-approved batch)`
+  Spec ref: `spec.md > More ideas`
+  Build: `manifest.webmanifest`, icons, `sw.js`, registration; bedtime settings; `.ics` builder in `store.js`.
+  Verify (mechanical): unit test for the .ics text; headless browser: manifest and service worker active, offline reload works, reminder fires with a fake clock.
+  Learner check: Install ThoughtPark from the browser menu and add the calendar reminder.
+  Commit: `Make ThoughtPark installable with a bedtime reminder`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
@@ -167,3 +227,4 @@ Activity mode:
 - Added slice 10 (Help me fall asleep) at the learner's request during final review; the learner asked the agent to choose the idea.
 - Added slice 11 (dream journal) at the learner's request during final review.
 - Added slice 12 (calendar) at the learner's request during final review.
+- Added slices 13–18 (six more ideas) at the learner's request during final review.
