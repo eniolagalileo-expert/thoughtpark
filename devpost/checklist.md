@@ -59,7 +59,7 @@ Build mode: fast (learner approved)
   Learner check: Park your last thought, tap "Breathe for a minute", follow a few breaths, then press Stop.
   Commit: `Add one-minute breathing moment`
 
-- [ ] **6. It looks and feels finished, and anyone can run it**
+- [x] **6. It looks and feels finished, and anyone can run it**
   Becomes usable: A polished, phone-friendly app with reduced-motion support, plus a README, license, and screenshots so judges understand and run it.
   Why now: Design is a judging criterion, and polish is safest once all behavior works.
   PRD ref: `prd.md > Look and Feel`, `prd.md > What We're Building`

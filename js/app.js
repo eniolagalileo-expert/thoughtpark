@@ -238,7 +238,7 @@ function cardFor(thought) {
     session.parked += 1;
     animateOut(card, 'is-parking', '--park-ms');
     updateCounter(true);
-    offerUndo('Parked for tomorrow', before, 'parked');
+    offerUndo('Parked', before, 'parked');
   });
   return card;
 }

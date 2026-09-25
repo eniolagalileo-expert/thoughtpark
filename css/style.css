@@ -76,15 +76,18 @@ button, textarea { font: inherit; color: inherit; }
 @keyframes twinkle { 50% { opacity: .08; } }
 
 .sky-star {
+  --d: calc(var(--size, 4px) * 1.6);
   position: absolute;
-  width: var(--size, 4px);
-  height: var(--size, 4px);
-  margin: calc(var(--size, 4px) / -2) 0 0 calc(var(--size, 4px) / -2);
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
   border-radius: 50%;
   background: #fff6d8;
-  box-shadow: 0 0 6px 2px rgba(242, 207, 122, .55), 0 0 18px 4px rgba(242, 207, 122, .2);
+  box-shadow: 0 0 8px 3px rgba(242, 207, 122, .6), 0 0 28px 8px rgba(242, 207, 122, .22);
+  animation: glow 5s ease-in-out infinite;
 }
-.sky-star.is-new { animation: star-in 1200ms var(--ease) both; }
+@keyframes glow { 50% { box-shadow: 0 0 10px 4px rgba(242, 207, 122, .75), 0 0 36px 12px rgba(242, 207, 122, .3); } }
+.sky-star.is-new { animation: star-in 1200ms var(--ease) both, glow 5s ease-in-out 1200ms infinite; }
 @keyframes star-in {
   0%   { opacity: 0; transform: scale(.2); }
   60%  { opacity: 1; transform: scale(1.8); }
@@ -359,6 +362,9 @@ body[data-theme="morning"] .sky-stars { opacity: 0; }
 .goodnight-summary { margin: 0; color: var(--accent); font-weight: 600; }
 .goodnight-note { margin: 8px 0 0; color: var(--muted); }
 .goodnight .link-button { align-self: center; }
+.goodnight-title, .goodnight-summary, .goodnight-note, .breath-label, .breath-remaining {
+  text-shadow: 0 0 10px var(--bg), 0 0 18px var(--bg);
+}
 
 /* Breathing moment */
 .goodnight .breathe-start { align-self: center; margin-top: 28px; padding: 0 24px; }
@@ -438,7 +444,7 @@ body[data-theme="morning"] .sky-stars { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   :root { --release-ms: 250ms; --park-ms: 200ms; --enter-ms: 1ms; }
-  .sky-dot, .sky-star.is-new, .prompt.is-fresh { animation: none; }
+  .sky-dot, .sky-star, .sky-star.is-new, .prompt.is-fresh { animation: none; }
   .sky-shooting { animation: shoot-fade 600ms linear forwards; transform: rotate(-25deg); }
   @keyframes shoot-fade { from { opacity: .8; } to { opacity: 0; } }
   .sky-sun, .sky-decor, .sky-stars { transition-duration: 1ms; }
