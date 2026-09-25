@@ -123,6 +123,10 @@ PRD ref: `prd.md > States and Boundaries` (First visit guide).
 The Morning screen's dream card: collapsed button, text box with optional dictation, saved view with Reflect / Edit / Delete, the reflection card, and the past-dreams list. Data helpers in `store.js` (tested): `addDream`, `updateDream`, `deleteDream`, `setDreamReflection`, `dreamForDay`; dreams are `{ id, text, createdAt, reflection? }` in `state.dreams`, newest first, capped at 60. `analyzeDream({ dream, thoughts })` in `ai.js` returns structured JSON `{ title, feelings[], themes[], reflection, connection, question }`.
 PRD ref: `prd.md > Dream journal`.
 
+### Calendar (`js/calendar.js`)
+`state.history` maps a night key (`YYYY-MM-DD`, local; `nightKey(ts)` is the date of `ts − 5 h`) to `{ parked: [{ id, text, note?, outcome? }], released }`. The pure functions that already change thoughts also keep history current, so undo (which restores a whole-state snapshot) stays correct: `parkThought` adds the entry, `releaseThought` counts, `toggleDone` sets or clears `outcome: "done"`, `letGoParked` sets `outcome: "let-go"`, `setNote` updates the note. `withHistoryBackfill` adds older parked thoughts on load; history is capped at 365 nights. `dreamNightKey(ts)` assigns a dream to the night before the morning it was noted. `calendar.js` renders the month grid and day detail in a `<dialog>`.
+PRD ref: `prd.md > Calendar`.
+
 ### Sleep tools (`js/sleep.js`, `js/sounds.js`)
 - `sleep.js`: full-screen views for Mind shuffle, Sleep sounds, and Sleep story, sharing Stop and the dim end screen with the breathing moment. Mind shuffle uses `shuffleSequence(word)` from `store.js` (pure, tested) with a built-in list of calm nouns per letter.
 - `sounds.js`: Web Audio API. One looping noise buffer (white, or brown by integration) through filters and gain: rain = band-passed white noise with random short "drop" bursts; ocean = low-passed brown noise with a slow gain wave; brown noise = brown noise. A master gain ramps down over 20 seconds when the timer ends.
@@ -166,6 +170,7 @@ build-with-ai/
 │   ├── companion.js    # Talk it through, Settings, and 988 panels
 │   ├── guide.js        # First-visit welcome guide
 │   ├── dreams.js       # Morning dream card, reflection, and journal
+│   ├── calendar.js     # Month calendar of past nights
 │   ├── sleep.js        # Help me fall asleep: mind shuffle, sleep sounds, sleep story
 │   ├── sounds.js       # Generated rain, ocean, and brown noise (Web Audio)
 │   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing

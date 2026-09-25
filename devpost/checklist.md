@@ -119,6 +119,16 @@ Build mode: fast (learner approved)
   Learner check: In the morning, note a dream and press Reflect with Claude.
   Commit: `Add dream journal with Claude reflections`
 
+- [x] **12. A calendar of every night**
+  Becomes usable: "Your calendar" shows a month view; each night lists what was parked, what became of it, how many thoughts were let go, and that morning's dream.
+  Why now: Learner request at final review; builds on thoughts, notes, and dreams.
+  PRD ref: `prd.md > Calendar`
+  Spec ref: `spec.md > Calendar (js/calendar.js)`
+  Build: history in `store.js` via the existing thought functions, backfill, pruning; `js/calendar.js`; links on both screens.
+  Verify (mechanical): unit tests for night keys (including after midnight), history updates from park/release/done/let go/notes, backfill, pruning, parsing; headless browser: after a night and a morning the calendar marks the day, shows outcomes, notes, released count, and the dream; month navigation; undo keeps history right; released text absent from storage.
+  Learner check: Open Your calendar and tap today.
+  Commit: `Add a calendar of every night`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
@@ -155,3 +165,4 @@ Activity mode:
 - Added slices 7–9 (AI companion) after the learner asked for a richer idea at final review; recorded in `scope.md`, `prd.md`, and `spec.md`. This reverses the earlier "no AI" decision at the learner's request.
 - Added slice 10 (Help me fall asleep) at the learner's request during final review; the learner asked the agent to choose the idea.
 - Added slice 11 (dream journal) at the learner's request during final review.
+- Added slice 12 (calendar) at the learner's request during final review.

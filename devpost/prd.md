@@ -157,6 +157,15 @@ Added at the learner's request during final review ("In the Morning section, the
   - [ ] Demo mode shows a labeled sample reflection with no network call; API errors show a plain message.
 - **Dream journal.** Earlier dreams are listed under "Dream journal (N)" with their dates and reflection titles; the newest 60 are kept.
 
+### Calendar
+Added at the learner's request during final review ("Make the calendar and store all of them per day").
+- Every night is kept as a day in a calendar: the thoughts parked that night (with notes), what became of each (done, let go in the morning, or still open), how many thoughts were let go that night (count only; released text is never stored), and the dream noted the next morning with its reflection title.
+- A night runs from 5:00 am to 5:00 am, so a thought parked at 1 am belongs to the previous evening; a dream noted in the morning belongs to the night before.
+- "Your calendar" next to "How it works" opens a month view: days with parked thoughts show a dot, days with a dream show a small moon; today is outlined. Previous and next month buttons. Tapping a day shows that night's details; an empty day says so.
+- Parked thoughts saved before the calendar existed are added to it automatically. The newest 365 nights are kept.
+  - [ ] Parking, letting go, checking off, morning let go, notes, and undo all show correctly in that night's entry.
+  - [ ] The calendar survives reloading; released thought text never appears in saved data.
+
 ### Help me fall asleep
 Added at the learner's request during final review ("You can add an idea which the service can help to fall asleep easily"); the learner asked the agent to choose. The Goodnight screen offers four tools under "Help me fall asleep": Breathe (the existing minute), Mind shuffle, Sleep sounds, and Sleep story.
 

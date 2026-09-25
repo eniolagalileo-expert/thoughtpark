@@ -5,7 +5,7 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [] };
+  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [], history: {} };
 }
 
 // Only counts are kept about last night, never the released text.
@@ -31,11 +31,13 @@ export function addThought(state, text, now = Date.now()) {
   return { state: { ...state, pending: [thought, ...state.pending] }, thought };
 }
 
-// "Let it go": removed from pending and never kept anywhere.
-export function releaseThought(state, id) {
+// "Let it go": removed from pending and never kept anywhere. Only the
+// calendar's count for tonight goes up.
+export function releaseThought(state, id, now = Date.now()) {
   const thought = state.pending.find((t) => t.id === id) ?? null;
   if (!thought) return { state, thought: null };
-  return { state: { ...state, pending: state.pending.filter((t) => t.id !== id) }, thought };
+  const released = { ...state, pending: state.pending.filter((t) => t.id !== id) };
+  return { state: countReleased(released, now), thought };
 }
 
 // "Tomorrow": moved from pending to parked. Parking a new thought also clears
@@ -44,22 +46,22 @@ export function parkThought(state, id, now = Date.now()) {
   const thought = state.pending.find((t) => t.id === id) ?? null;
   if (!thought) return { state, thought: null };
   const parked = { ...thought, parkedAt: now, done: false };
-  return {
-    state: {
-      ...state,
-      pending: state.pending.filter((t) => t.id !== id),
-      parked: [parked, ...clearDone(state).parked],
-    },
-    thought: parked,
+  const next = {
+    ...state,
+    pending: state.pending.filter((t) => t.id !== id),
+    parked: [parked, ...clearDone(state).parked],
   };
+  return { state: rememberParked(next, parked), thought: parked };
 }
 
 // Morning check-off, toggled so a mis-tap can be reversed.
 export function toggleDone(state, id) {
-  return {
+  const thought = state.parked.find((t) => t.id === id);
+  const next = {
     ...state,
     parked: state.parked.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
   };
+  return thought ? setOutcome(next, id, thought.done ? null : 'done') : next;
 }
 
 export function clearDone(state) {
@@ -68,7 +70,7 @@ export function clearDone(state) {
 
 // Morning "Doesn't matter anymore": the parked thought is let go for good.
 export function letGoParked(state, id) {
-  return { ...state, parked: state.parked.filter((t) => t.id !== id) };
+  return setOutcome({ ...state, parked: state.parked.filter((t) => t.id !== id) }, id, 'let-go');
 }
 
 // ---- Last night's summary -------------------------------------------------
@@ -134,6 +136,7 @@ export function parseState(raw) {
       seenGuide: Boolean(data.seenGuide),
       night: parseNight(data.night),
       dreams: parseDreams(data.dreams),
+      history: parseHistory(data.history),
     };
   } catch {
     return emptyState();
@@ -264,7 +267,8 @@ export function setNote(state, id, note) {
     const { note: _old, ...rest } = t;
     return clean ? { ...rest, note: clean } : rest;
   };
-  return { ...state, pending: state.pending.map(withNote), parked: state.parked.map(withNote) };
+  const next = { ...state, pending: state.pending.map(withNote), parked: state.parked.map(withNote) };
+  return mapHistoryEntry(next, id, withNote);
 }
 
 // Split spoken words into separate thoughts without AI: sentences first, then
@@ -390,4 +394,133 @@ function parseDreams(dreams) {
       return dream;
     })
     .slice(0, MAX_DREAMS);
+}
+
+// ---- Calendar -------------------------------------------------------------
+
+export const MAX_HISTORY_DAYS = 365;
+const NIGHT_STARTS_HOUR = 5; // a night runs from 5 am to 5 am
+
+export function dayKey(time) {
+  const d = new Date(time);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// The night something happened in: 1 am on the 25th belongs to the night of the 24th.
+export function nightKey(time) {
+  return dayKey(time - NIGHT_STARTS_HOUR * 3600e3);
+}
+
+// A dream noted in the morning belongs to the night before.
+export function dreamNightKey(time) {
+  if (new Date(time).getHours() < NIGHT_STARTS_HOUR) return nightKey(time);
+  const d = new Date(time);
+  return dayKey(new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, 12).getTime());
+}
+
+function emptyDay() {
+  return { parked: [], released: 0 };
+}
+
+function pruneHistory(history) {
+  const keys = Object.keys(history).sort();
+  if (keys.length <= MAX_HISTORY_DAYS) return history;
+  const kept = {};
+  for (const key of keys.slice(-MAX_HISTORY_DAYS)) kept[key] = history[key];
+  return kept;
+}
+
+function withDay(state, key, update) {
+  const history = state.history ?? {};
+  const day = history[key] ?? emptyDay();
+  return { ...state, history: pruneHistory({ ...history, [key]: update(day) }) };
+}
+
+function historyEntry(thought) {
+  const entry = { id: thought.id, text: thought.text };
+  if (thought.note) entry.note = thought.note;
+  return entry;
+}
+
+function rememberParked(state, thought) {
+  return withDay(state, nightKey(thought.parkedAt), (day) => ({
+    ...day,
+    parked: [historyEntry(thought), ...day.parked.filter((t) => t.id !== thought.id)],
+  }));
+}
+
+function countReleased(state, now) {
+  return withDay(state, nightKey(now), (day) => ({ ...day, released: day.released + 1 }));
+}
+
+// Apply `fn` to the history entry with this id, wherever it is.
+function mapHistoryEntry(state, id, fn) {
+  const history = state.history ?? {};
+  for (const [key, day] of Object.entries(history)) {
+    if (day.parked.some((t) => t.id === id)) {
+      return { ...state, history: { ...history, [key]: { ...day, parked: day.parked.map((t) => (t.id === id ? fn(t) : t)) } } };
+    }
+  }
+  return state;
+}
+
+function setOutcome(state, id, outcome) {
+  return mapHistoryEntry(state, id, (t) => {
+    const { outcome: _old, ...rest } = t;
+    return outcome ? { ...rest, outcome } : rest;
+  });
+}
+
+// Parked thoughts from before the calendar existed are added to it.
+export function withHistoryBackfill(state) {
+  let next = state;
+  for (const thought of state.parked) {
+    const known = Object.values(next.history ?? {}).some((day) => day.parked.some((t) => t.id === thought.id));
+    if (known || !Number.isFinite(thought.parkedAt)) continue;
+    next = rememberParked(next, thought);
+    if (thought.done) next = setOutcome(next, thought.id, 'done');
+  }
+  return next;
+}
+
+// Everything the calendar shows for one night.
+export function nightDetails(state, key) {
+  const day = state.history?.[key] ?? emptyDay();
+  const dream = (state.dreams ?? []).find((d) => dreamNightKey(d.createdAt) === key) ?? null;
+  return { parked: day.parked, released: day.released, dream };
+}
+
+// Which nights in a month have something saved: { 'YYYY-MM-DD': { thoughts, dream } }.
+export function monthMarks(state, year, month) {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+  const marks = {};
+  for (const [key, day] of Object.entries(state.history ?? {})) {
+    if (key.startsWith(prefix) && (day.parked.length || day.released)) marks[key] = { thoughts: day.parked.length + day.released, dream: false };
+  }
+  for (const dream of state.dreams ?? []) {
+    const key = dreamNightKey(dream.createdAt);
+    if (key.startsWith(prefix)) marks[key] = { thoughts: marks[key]?.thoughts ?? 0, dream: true };
+  }
+  return marks;
+}
+
+const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
+const OUTCOMES = new Set(['done', 'let-go']);
+
+function parseHistory(history) {
+  if (!history || typeof history !== 'object' || Array.isArray(history)) return {};
+  const clean = {};
+  for (const [key, day] of Object.entries(history)) {
+    if (!DAY_KEY.test(key) || !day || typeof day !== 'object') continue;
+    const parked = Array.isArray(day.parked)
+      ? day.parked.filter(isThought).map((t) => {
+        const entry = { id: t.id, text: t.text.slice(0, MAX_LENGTH) };
+        if (typeof t.note === 'string' && t.note.trim()) entry.note = t.note.slice(0, 160);
+        if (OUTCOMES.has(t.outcome)) entry.outcome = t.outcome;
+        return entry;
+      })
+      : [];
+    clean[key] = { parked, released: Number.isInteger(day.released) && day.released > 0 ? day.released : 0 };
+  }
+  return pruneHistory(clean);
 }

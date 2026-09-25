@@ -1,0 +1,129 @@
+// "Your calendar": a month of nights. Each night shows what was parked, what
+// became of it, how many thoughts were let go, and the dream noted after it.
+import { monthMarks, nightDetails, nightKey } from './store.js';
+
+const dialog = document.getElementById('calendar');
+const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const OUTCOME_LABELS = { done: 'Done', 'let-go': 'Let go' };
+
+function el(tag, props = {}, children = []) {
+  const node = document.createElement(tag);
+  Object.assign(node, props);
+  for (const child of [].concat(children)) node.append(child);
+  return node;
+}
+
+function keyFor(year, month, day) {
+  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function longDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+dialog.addEventListener('click', (event) => {
+  if (event.target === dialog) dialog.close();
+});
+
+export function openCalendar({ getState }) {
+  const tonight = nightKey(Date.now());
+  const [ty, tm] = tonight.split('-').map(Number);
+  let year = ty;
+  let month = tm - 1;
+  let selected = tonight;
+
+  const title = el('h2', { className: 'sheet-title', id: 'calendar-title' });
+  const prev = el('button', { type: 'button', className: 'icon-button cal-nav', textContent: '‹' });
+  const next = el('button', { type: 'button', className: 'icon-button cal-nav', textContent: '›' });
+  prev.setAttribute('aria-label', 'Previous month');
+  next.setAttribute('aria-label', 'Next month');
+  const grid = el('div', { className: 'cal-grid', role: 'grid' });
+  const detail = el('section', { className: 'cal-detail', id: 'cal-detail' });
+  detail.setAttribute('aria-live', 'polite');
+  const close = el('button', { type: 'button', className: 'icon-button sheet-close', textContent: '×' });
+  close.setAttribute('aria-label', 'Close');
+  close.addEventListener('click', () => dialog.close());
+
+  prev.addEventListener('click', () => { month -= 1; if (month < 0) { month = 11; year -= 1; } renderMonth(); });
+  next.addEventListener('click', () => { month += 1; if (month > 11) { month = 0; year += 1; } renderMonth(); });
+
+  dialog.replaceChildren(
+    el('header', { className: 'sheet-header' }, [
+      el('div', { className: 'cal-heading' }, [prev, title, next]),
+      close,
+    ]),
+    grid,
+    el('p', { className: 'cal-legend' }, [
+      el('span', { className: 'cal-dot' }), ' thoughts parked  ',
+      el('span', { className: 'cal-moon', textContent: '☾' }), ' dream noted',
+    ]),
+    detail,
+    el('p', { className: 'cal-privacy', textContent: 'Saved only on this device. Thoughts you let go at night are never stored, only counted.' }),
+  );
+
+  function renderMonth() {
+    title.textContent = new Date(year, month, 1).toLocaleDateString([], { month: 'long', year: 'numeric' });
+    const marks = monthMarks(getState(), year, month);
+    const first = new Date(year, month, 1).getDay();
+    const days = new Date(year, month + 1, 0).getDate();
+    const cells = WEEKDAYS.map((d) => el('span', { className: 'cal-weekday', textContent: d }));
+    for (let i = 0; i < first; i += 1) cells.push(el('span', { className: 'cal-blank' }));
+    for (let day = 1; day <= days; day += 1) {
+      const key = keyFor(year, month, day);
+      const mark = marks[key];
+      const button = el('button', { type: 'button', className: 'cal-day' }, [
+        el('span', { className: 'cal-num', textContent: String(day) }),
+        el('span', { className: 'cal-marks' }, [
+          ...(mark?.thoughts ? [el('span', { className: 'cal-dot' })] : []),
+          ...(mark?.dream ? [el('span', { className: 'cal-moon', textContent: '☾' })] : []),
+        ]),
+      ]);
+      button.dataset.key = key;
+      if (key === tonight) button.classList.add('is-today');
+      if (key === selected) button.setAttribute('aria-pressed', 'true');
+      if (key > tonight) button.disabled = true;
+      button.setAttribute('aria-label', `${longDate(key)}${mark?.thoughts ? ', thoughts saved' : ''}${mark?.dream ? ', dream noted' : ''}`);
+      button.addEventListener('click', () => {
+        selected = key;
+        for (const b of grid.querySelectorAll('.cal-day')) b.removeAttribute('aria-pressed');
+        button.setAttribute('aria-pressed', 'true');
+        renderDetail();
+      });
+      cells.push(button);
+    }
+    grid.replaceChildren(...cells);
+  }
+
+  function renderDetail() {
+    const night = nightDetails(getState(), selected);
+    const parts = [el('h3', { className: 'cal-detail-title', textContent: `The night of ${longDate(selected)}` })];
+    if (!night.parked.length && !night.released && !night.dream) {
+      parts.push(el('p', { className: 'cal-empty', textContent: 'Nothing saved for this night.' }));
+    }
+    if (night.parked.length) {
+      parts.push(el('ul', { className: 'cal-thoughts' }, night.parked.map((t) => el('li', {}, [
+        el('span', { className: 'cal-thought', textContent: t.text }),
+        ...(t.note ? [el('span', { className: 'cal-note', textContent: t.note })] : []),
+        el('span', {
+          className: `cal-outcome cal-outcome-${t.outcome ?? 'open'}`,
+          textContent: OUTCOME_LABELS[t.outcome] ?? (selected === nightKey(Date.now()) ? 'Parked' : 'Still open'),
+        }),
+      ]))));
+    }
+    if (night.released) {
+      parts.push(el('p', { className: 'cal-released', textContent: `Let go of ${night.released} thought${night.released === 1 ? '' : 's'} that night.` }));
+    }
+    if (night.dream) {
+      parts.push(el('div', { className: 'cal-dream' }, [
+        el('p', { className: 'cal-dream-label', textContent: `☾ Dream${night.dream.reflection ? `: ${night.dream.reflection.title}` : ''}` }),
+        el('p', { className: 'cal-dream-text', textContent: night.dream.text }),
+      ]));
+    }
+    detail.replaceChildren(...parts);
+  }
+
+  renderMonth();
+  renderDetail();
+  dialog.showModal();
+}

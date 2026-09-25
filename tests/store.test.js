@@ -7,6 +7,7 @@ import {
   letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote, splitLocally,
   shuffleSequence, SHUFFLE_WORDS, SHUFFLE_ITEMS,
   addDream, updateDream, deleteDream, setDreamReflection, dreamForDay, cleanDream, MAX_DREAMS,
+  dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -355,4 +356,102 @@ test('dreams and reflections survive saving; bad data is dropped', () => {
   const parsed = parseState(JSON.stringify({ dreams: [{ id: 'a', text: 't', createdAt: 1, reflection: { title: 5 } }, { id: 'b' }, 'x'] }));
   assert.equal(parsed.dreams.length, 1);
   assert.equal('reflection' in parsed.dreams[0], false);
+});
+
+// ---- Calendar -------------------------------------------------------------
+
+const at = (day, hour, minute = 0) => new Date(2026, 8, day, hour, minute).getTime();
+
+test('a night runs from 5 am to 5 am', () => {
+  assert.equal(dayKey(at(24, 23)), '2026-09-24');
+  assert.equal(nightKey(at(24, 23)), '2026-09-24');
+  assert.equal(nightKey(at(25, 1)), '2026-09-24');
+  assert.equal(nightKey(at(25, 4, 59)), '2026-09-24');
+  assert.equal(nightKey(at(25, 5)), '2026-09-25');
+});
+
+test('a morning dream belongs to the night before', () => {
+  assert.equal(dreamNightKey(at(25, 7)), '2026-09-24');
+  assert.equal(dreamNightKey(at(25, 15)), '2026-09-24');
+  assert.equal(dreamNightKey(at(25, 3)), '2026-09-24');
+  assert.equal(dreamNightKey(new Date(2026, 9, 1, 8).getTime()), '2026-09-30');
+});
+
+function nightOf24() {
+  let state = emptyState();
+  for (const text of ['Renew passport', 'Reply to Jordan', 'Awkward joke', 'Buy milk']) state = addThought(state, text, at(24, 22)).state;
+  const id = (text) => state.pending.find((t) => t.text === text).id;
+  const ids = { passport: id('Renew passport'), jordan: id('Reply to Jordan'), joke: id('Awkward joke'), milk: id('Buy milk') };
+  state = parkThought(state, ids.passport, at(24, 23)).state;
+  state = parkThought(state, ids.jordan, at(25, 0, 30)).state;
+  state = parkThought(state, ids.milk, at(25, 0, 40)).state;
+  state = releaseThought(state, ids.joke, at(25, 0, 45)).state;
+  return { state, ids };
+}
+
+test('parking and letting go at night are kept on that night', () => {
+  const { state } = nightOf24();
+  const night = nightDetails(state, '2026-09-24');
+  assert.deepEqual(night.parked.map((t) => t.text).sort(), ['Buy milk', 'Renew passport', 'Reply to Jordan']);
+  assert.equal(night.released, 1);
+  assert.equal(JSON.stringify(state.history).includes('Awkward joke'), false);
+});
+
+test('morning outcomes and notes show on the night', () => {
+  let { state, ids } = nightOf24();
+  state = setNote(state, ids.passport, 'Open the form first');
+  state = toggleDone(state, ids.passport);
+  state = letGoParked(state, ids.jordan);
+  let night = nightDetails(state, '2026-09-24');
+  const byText = Object.fromEntries(night.parked.map((t) => [t.text, t]));
+  assert.equal(byText['Renew passport'].outcome, 'done');
+  assert.equal(byText['Renew passport'].note, 'Open the form first');
+  assert.equal(byText['Reply to Jordan'].outcome, 'let-go');
+  assert.equal('outcome' in byText['Buy milk'], false);
+  state = toggleDone(state, ids.passport);
+  night = nightDetails(state, '2026-09-24');
+  assert.equal('outcome' in night.parked.find((t) => t.id === ids.passport), false);
+});
+
+test('history outlives the morning list being cleared', () => {
+  let { state, ids } = nightOf24();
+  state = toggleDone(state, ids.passport);
+  const added = addThought(state, 'Next night', at(25, 22));
+  state = parkThought(added.state, added.thought.id, at(25, 22)).state;
+  assert.equal(state.parked.some((t) => t.id === ids.passport), false);
+  assert.equal(nightDetails(state, '2026-09-24').parked.find((t) => t.id === ids.passport).outcome, 'done');
+  assert.deepEqual(nightDetails(state, '2026-09-25').parked.map((t) => t.text), ['Next night']);
+});
+
+test('dreams and marks appear on the calendar month', () => {
+  let { state } = nightOf24();
+  state = addDream(state, 'A long train', at(25, 7)).state;
+  assert.equal(nightDetails(state, '2026-09-24').dream.text, 'A long train');
+  assert.deepEqual(monthMarks(state, 2026, 8), { '2026-09-24': { thoughts: 4, dream: true } });
+  assert.deepEqual(monthMarks(state, 2026, 9), {});
+  assert.equal(nightDetails(state, '2026-09-20').parked.length, 0);
+});
+
+test('older parked thoughts are backfilled into the calendar', () => {
+  const old = { ...emptyState(), parked: [
+    { id: 'a', text: 'From before', createdAt: at(20, 22), parkedAt: at(20, 23), done: true },
+    { id: 'b', text: 'No time', createdAt: 1, done: false },
+  ] };
+  const filled = withHistoryBackfill(old);
+  assert.deepEqual(nightDetails(filled, '2026-09-20').parked, [{ id: 'a', text: 'From before', outcome: 'done' }]);
+  assert.equal(withHistoryBackfill(filled), filled);
+});
+
+test('history is capped and cleaned when loaded', () => {
+  let state = emptyState();
+  for (let i = 0; i < MAX_HISTORY_DAYS + 3; i += 1) {
+    const added = addThought(state, `t${i}`, 0);
+    state = parkThought(added.state, added.thought.id, new Date(2025, 0, 1 + i, 22).getTime()).state;
+  }
+  assert.equal(Object.keys(state.history).length, MAX_HISTORY_DAYS);
+  const storage = memoryStorage();
+  save(storage, state);
+  assert.equal(Object.keys(load(storage).history).length, MAX_HISTORY_DAYS);
+  const parsed = parseState(JSON.stringify({ history: { 'bad-key': {}, '2026-09-24': { parked: [{ id: 'x', text: 'y', outcome: 'weird' }, { nope: 1 }], released: -2 } } }));
+  assert.deepEqual(parsed.history, { '2026-09-24': { parked: [{ id: 'x', text: 'y' }], released: 0 } });
 });

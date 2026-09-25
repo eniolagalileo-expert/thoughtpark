@@ -2,12 +2,13 @@
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
-  setNote, crisisCheck, splitLocally, MAX_LENGTH,
+  setNote, crisisCheck, splitLocally, withHistoryBackfill, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
 import { openGuide } from './guide.js';
 import { dreamSection } from './dreams.js';
+import { openCalendar } from './calendar.js';
 import { startShuffle, startSounds, startStory, stopSleepTools } from './sleep.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -30,7 +31,7 @@ const storage = {
   setItem: (k, v) => window.localStorage.setItem(k, v),
 };
 
-let state = load(storage);
+let state = withHistoryBackfill(load(storage));
 let mode = modeForHour(new Date().getHours());
 
 // Counts for the Goodnight screen, reset each time the Night screen opens.
@@ -116,11 +117,13 @@ function showGuide() {
   openGuide({ onClose: () => { if (!state.seenGuide) commit({ ...state, seenGuide: true }); } });
 }
 
-// A small "How it works" link that reopens the welcome guide.
+// "How it works" (reopens the welcome guide) and "Your calendar" links.
 function howItWorks() {
   const link = el('button', { type: 'button', className: 'how-link', textContent: 'How it works' });
   link.addEventListener('click', showGuide);
-  return link;
+  const calendar = el('button', { type: 'button', className: 'how-link', id: 'open-calendar', textContent: 'Your calendar' });
+  calendar.addEventListener('click', () => openCalendar({ getState: () => state }));
+  return el('div', { className: 'screen-links' }, [link, calendar]);
 }
 
 // A note saved from Talk it through, shown under the thought.
