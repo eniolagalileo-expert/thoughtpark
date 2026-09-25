@@ -119,6 +119,12 @@ PRD ref: `prd.md > AI companion`.
 A four-step `<dialog>` guide with Back / Next / Skip and step dots, opened on load when `state.seenGuide` is false and from "How it works" links. Closing it by any means sets `seenGuide: true`.
 PRD ref: `prd.md > States and Boundaries` (First visit guide).
 
+### Sleep tools (`js/sleep.js`, `js/sounds.js`)
+- `sleep.js`: full-screen views for Mind shuffle, Sleep sounds, and Sleep story, sharing Stop and the dim end screen with the breathing moment. Mind shuffle uses `shuffleSequence(word)` from `store.js` (pure, tested) with a built-in list of calm nouns per letter.
+- `sounds.js`: Web Audio API. One looping noise buffer (white, or brown by integration) through filters and gain: rain = band-passed white noise with random short "drop" bursts; ocean = low-passed brown noise with a slow gain wave; brown noise = brown noise. A master gain ramps down over 20 seconds when the timer ends.
+- Sleep story: `sleepStory({ setting, onText })` in `ai.js`, streamed like Talk it through; spoken with `speechSynthesis` sentence by sentence (rate 0.85, pitch 0.9). Demo mode returns a built-in story.
+PRD ref: `prd.md > Help me fall asleep`.
+
 ### Undo toast
 After release or park, shows "Released · Undo" or "Parked · Undo" for 5 seconds; Undo calls `restore()`. Only the most recent action can be undone.
 PRD ref: `prd.md > Parking thoughts (the kernel)`.
@@ -154,6 +160,8 @@ build-with-ai/
 │   ├── ai.js           # Claude calls (talk, note, split, plan), demo mode, key storage
 │   ├── companion.js    # Talk it through, Settings, and 988 panels
 │   ├── guide.js        # First-visit welcome guide
+│   ├── sleep.js        # Help me fall asleep: mind shuffle, sleep sounds, sleep story
+│   ├── sounds.js       # Generated rain, ocean, and brown noise (Web Audio)
 │   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing
 ├── tests/
 │   └── store.test.js   # node --test unit tests for store.js
@@ -166,6 +174,7 @@ build-with-ai/
 
 ## External Services and Dependencies
 - **Anthropic Messages API** via `@anthropic-ai/sdk` 0.128.0 (jsdelivr ESM). Calls go from the browser to `api.anthropic.com` with the user's key. Model `claude-opus-5`, effort `low`; about a few cents per night of use. Docs: https://docs.anthropic.com/en/api/messages
+- **Web Audio API** for sleep sounds and **speechSynthesis** for reading the sleep story aloud; both built into the browser. Docs: https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API, https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis
 - **Browser speech recognition** (Web Speech API; in Chrome, audio is processed by Google's speech service). Docs: https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition
 - **Google Fonts (Nunito)** — CSS link `https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap`. No key, free. Falls back to `system-ui` when offline.
 - **GitHub Pages (optional hosting)** — free for public repos. Docs: https://docs.github.com/en/pages

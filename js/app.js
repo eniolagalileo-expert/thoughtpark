@@ -7,6 +7,7 @@ import {
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
 import { openGuide } from './guide.js';
+import { startShuffle, startSounds, startStory, stopSleepTools } from './sleep.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -437,8 +438,24 @@ function renderGoodnight() {
     session.released ? `${session.released} let go` : null,
   ].filter(Boolean).join(', ');
 
-  const breathe = el('button', { type: 'button', className: 'btn btn-primary breathe-start', textContent: 'Breathe for a minute' });
-  breathe.addEventListener('click', renderBreathing);
+  const tool = (id, name, detail, start) => {
+    const button = el('button', { type: 'button', className: `sleep-option sleep-option-${id}` }, [
+      el('span', { className: 'sleep-option-name', textContent: name }),
+      el('span', { className: 'sleep-option-detail', textContent: detail }),
+    ]);
+    button.addEventListener('click', () => { clearUndo(); start(); });
+    return button;
+  };
+  const ends = { onStop: renderGoodnight, onDone: renderSleep };
+  const tools = el('section', { className: 'sleep-tools' }, [
+    el('h2', { className: 'sleep-tools-title', textContent: 'Help me fall asleep' }),
+    el('div', { className: 'sleep-grid' }, [
+      tool('breathe', 'Breathe', 'One slow minute', renderBreathing),
+      tool('shuffle', 'Mind shuffle', 'Picture random calm things', () => startShuffle(screen, ends)),
+      tool('sounds', 'Sleep sounds', 'Rain, ocean, brown noise', () => startSounds(screen, ends)),
+      tool('story', 'Sleep story ✦', 'A slow story, read aloud', () => startStory(screen, ends)),
+    ]),
+  ]);
   const more = el('button', { type: 'button', className: 'link-button', textContent: 'Add another thought' });
   more.addEventListener('click', () => renderNight({ keepSession: true }));
 
@@ -446,7 +463,7 @@ function renderGoodnight() {
     el('h1', { className: 'goodnight-title', textContent: 'All parked. Goodnight.' }),
     el('p', { className: 'goodnight-summary', textContent: summary }),
     el('p', { className: 'goodnight-note', textContent: 'Nothing left to hold onto tonight.' }),
-    breathe,
+    tools,
     more,
   ]));
 }
@@ -494,6 +511,7 @@ function renderBreathing() {
 }
 
 function stopBreathing() {
+  stopSleepTools();
   if (breathingFrame) cancelAnimationFrame(breathingFrame);
   breathingFrame = null;
   document.getElementById('sleep')?.remove();

@@ -13,6 +13,7 @@ ThoughtPark is a bedtime companion for people who can't fall asleep because thei
 <p>
   <img src="docs/screenshots/phone-talk.png" alt="Talk it through: a short chat about a worry, with Park with this note" width="200">
   <img src="docs/screenshots/phone-plan.png" alt="Morning plan: an ordered plan made from parked thoughts" width="200">
+  <img src="docs/screenshots/phone-shuffle.png" alt="Mind shuffle: the word MEADOW with the letter M and 'a mitten'" width="200">
 </p>
 
 <sub>The chat and plan screenshots show illustrative example text.</sub>
@@ -36,7 +37,12 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
 - **Safety first.** Before anything is sent to Claude, the app checks for signs of crisis. If it finds them, it shows the 988 Suicide & Crisis Lifeline (call or text) instead of a chat.
 - **Gentle prompts.** If you stop typing, soft questions appear ("Someone you need to reply to?") to help you empty your mind completely.
 - **All parked. Goodnight.** When nothing is left, a quiet goodnight screen shows what you parked and released.
-- **One minute of breathing.** An optional guided minute (4 seconds in, 6 seconds out), then the screen dims to near-black.
+- **Help me fall asleep.** After "All parked. Goodnight." four tools help you drift off:
+  - **Breathe:** a guided minute (4 seconds in, 6 seconds out).
+  - **Mind shuffle:** based on cognitive scientist Luc Beaudoin's "cognitive shuffle" (serial diverse imagining), which was designed for racing thoughts at bedtime. A calm word is spelled out slowly, and for each letter you picture simple, unrelated things ("M… a mitten… the moon… a mug"). This crowds out worry the way the mind naturally drifts at sleep onset ([study](https://www.researchgate.net/publication/300004607_Serial_Diverse_Imagining_Task_A_New_Remedy_for_Bedtime_Complaints_of_Worrying_and_Other_Sleep-Disruptive_Mental_Activity), [SFU](https://www.sfu.ca/main/dashboard/faculty-staff/news/2025/04/reprogramming-rest--sfu-researcher-s-science-of-falling-asleep.html)).
+  - **Sleep sounds:** rain, ocean waves, or brown noise, generated live in the browser, with a 15, 30, or 60 minute fade-out.
+  - **Sleep story (AI):** pick a setting (a lighthouse, a night train, a snowy cabin, a quiet garden) and Claude writes a slow, deliberately uneventful story that your device reads aloud. Only the setting is sent.
+  Each tool ends by dimming the screen to near-black.
 - **Morning handoff.** At sunrise each star falls from the sky into your checklist, and a line sums up your night: "Last night you parked 3 thoughts and let go of 2. You slept on it." (Only the counts are kept.)
 - **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore, and watch it shimmer like a rainbow and burst into sparkles. When everything is done: "All clear. Have a good day." 
 - **Forgiving.** Every park or release can be undone for 5 seconds, which helps with half-asleep taps.
@@ -82,7 +88,9 @@ Plain HTML, CSS, and JavaScript with no framework and no build step. The only ru
 | `js/ai.js` | Claude calls: streamed Talk it through, notes, voice splitting, morning plan (structured JSON outputs), demo mode, key storage |
 | `js/companion.js` | The Talk it through, Settings, and 988 support panels |
 | `js/guide.js` | The four-step welcome guide for first-time visitors |
-| `tests/store.test.js` | 32 unit tests for `store.js` using Node's built-in test runner |
+| `js/sleep.js` | Help me fall asleep: mind shuffle, sleep sounds, sleep story (read aloud with the browser's voice) |
+| `js/sounds.js` | Rain, ocean, and brown noise generated with the Web Audio API |
+| `tests/store.test.js` | 34 unit tests for `store.js` using Node's built-in test runner |
 
 Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts (with any notes) plus last night's two counts. The API key is stored separately under `thoughtpark:apiKey`; conversations are never saved.
 

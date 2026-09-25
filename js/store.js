@@ -280,3 +280,39 @@ export function splitLocally(transcript) {
   }
   return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1));
 }
+
+// ---- Mind shuffle ---------------------------------------------------------
+
+// Calm seed words and simple, unrelated things to picture for each letter
+// (Luc Beaudoin's cognitive shuffle / serial diverse imagining).
+export const SHUFFLE_WORDS = ['BLANKET', 'HARBOR', 'MEADOW', 'LANTERN', 'PILLOW', 'ORCHARD', 'CANDLE', 'WILLOW'];
+
+export const SHUFFLE_ITEMS = {
+  A: ['an apple', 'an acorn', 'an armchair', 'an anchor'],
+  B: ['a bicycle', 'a blueberry', 'a bucket', 'a butterfly'],
+  C: ['a cup of cocoa', 'a candle', 'a cloud', 'a cat'],
+  D: ['a daisy', 'a drum', 'a door', 'a duck'],
+  E: ['an envelope', 'an egg', 'an elephant', 'an easel'],
+  H: ['a hat', 'a honeybee', 'a hammock', 'a harp'],
+  I: ['an igloo', 'an ice cube', 'an iris', 'an inkwell'],
+  K: ['a kite', 'a kettle', 'a key', 'a koala'],
+  L: ['a lemon', 'a leaf', 'a lighthouse', 'a lamb'],
+  M: ['a mitten', 'the moon', 'a mug', 'a maple tree'],
+  N: ['a nest', 'a notebook', 'a nutshell', 'a napkin'],
+  O: ['an owl', 'an orange', 'an oar', 'an oak leaf'],
+  P: ['a pebble', 'a pear', 'a paintbrush', 'a pinecone'],
+  R: ['a rowboat', 'a raindrop', 'a rabbit', 'a ribbon'],
+  T: ['a teapot', 'a tulip', 'a turtle', 'a tent'],
+  W: ['a wave', 'a windmill', 'a wool sweater', 'a watering can'],
+};
+
+// The steps for one word: each letter, then a few things to picture.
+export function shuffleSequence(word, perLetter = 3) {
+  const steps = [];
+  for (const letter of word.toUpperCase()) {
+    const items = SHUFFLE_ITEMS[letter];
+    if (!items) continue;
+    for (const item of items.slice(0, perLetter)) steps.push({ letter, item });
+  }
+  return steps;
+}

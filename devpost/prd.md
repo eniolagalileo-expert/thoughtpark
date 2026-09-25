@@ -146,6 +146,17 @@ Added at the learner's request during final review; learner approved features 1,
 - Claude's instructions also say to point to 988 if risk appears in conversation.
   - [ ] Crisis wording always shows the 988 card and never calls the API.
 
+### Help me fall asleep
+Added at the learner's request during final review ("You can add an idea which the service can help to fall asleep easily"); the learner asked the agent to choose. The Goodnight screen offers four tools under "Help me fall asleep": Breathe (the existing minute), Mind shuffle, Sleep sounds, and Sleep story.
+
+- **Mind shuffle.** Based on Luc Beaudoin's cognitive shuffle (serial diverse imagining). A calm seed word is spelled out one letter at a time; for each letter, a few simple, unrelated things starting with it fade in slowly ("B… a bicycle… a blanket… a blueberry"), one every ~7 seconds, for five minutes, then the screen dims to near-black.
+  - [ ] Words and items change slowly; Stop returns to Goodnight; after the session the dim "Goodnight" screen appears.
+- **Sleep sounds.** Rain, ocean, or brown noise generated in the browser, with a timer (15, 30, or 60 minutes) that fades the sound out; the screen dims while it plays.
+  - [ ] Choosing a sound starts it; choosing a timer ends it with a fade; Stop silences it immediately.
+- **Sleep story (AI).** The user picks a setting (a lighthouse, a night train, a winter cabin, a quiet garden). Claude writes a slow, gentle, deliberately uneventful story of about 350 words, shown in dim text and read aloud by the device's voice at a slow pace. Demo mode uses a built-in sample story, labeled.
+  - [ ] The story streams in; reading aloud can be turned off; Stop ends both text and voice.
+- All four respect reduced motion and never send the user's thoughts anywhere (the story request contains only the chosen setting).
+
 ## States and Boundaries
 - **First visit guide:** on the very first visit, a short welcome guide opens: four steps (empty your mind, park or let go, talk it through, wake up to your list) with Back, Next, and Skip, and a note that everything stays on the device. It never opens again by itself; a "How it works" link under each screen title reopens it. (Added at the learner's request during final review: "When the user who is the first in this website visit… he will misunderstand what it is.")
 - **First use:** the Night screen shows a one-line hint under the box: "Type each thought, then park it. They'll be waiting in the morning."

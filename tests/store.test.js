@@ -5,6 +5,7 @@ import {
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
   starPosition, hashString, promptAt, PROMPTS, breathPhase,
   letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote, splitLocally,
+  shuffleSequence, SHUFFLE_WORDS, SHUFFLE_ITEMS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -297,4 +298,18 @@ test('the welcome guide is remembered once seen', () => {
   assert.equal(load(storage).seenGuide, true);
   assert.equal(parseState('{"seenGuide":"yes"}').seenGuide, true);
   assert.equal(parseState('{}').seenGuide, false);
+});
+
+test('every mind shuffle word has things to picture for each letter', () => {
+  for (const word of SHUFFLE_WORDS) {
+    for (const letter of word) assert.ok(SHUFFLE_ITEMS[letter]?.length >= 3, `${word}: ${letter}`);
+    assert.equal(shuffleSequence(word).length, word.length * 3);
+  }
+});
+
+test('shuffleSequence walks the word letter by letter', () => {
+  const steps = shuffleSequence('bed'.replace('d', 'e'), 2);
+  assert.deepEqual(steps.map((s) => s.letter), ['B', 'B', 'E', 'E', 'E', 'E']);
+  assert.equal(steps[0].item, 'a bicycle');
+  assert.deepEqual(shuffleSequence('xyz'), []);
 });

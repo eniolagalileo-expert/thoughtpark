@@ -194,7 +194,32 @@ export async function morningPlan(items) {
   return { opener: plan.opener, steps: plan.steps.filter((s) => known.has(s.id)) };
 }
 
+// ---- Sleep story --------------------------------------------------------------
+
+const STORY_SYSTEM = `You write sleep stories: slow, gentle, deliberately uneventful stories that help a listener drift off. Second person ("you"), present tense, about 350 words. Nothing happens that could create suspense, surprise, conflict, or strong emotion. Linger on soft sensory details: warm light, quiet sounds, textures, slow breathing, repetition. Sentences get a little shorter and slower toward the end, which fades into rest. Plain text only, no title, no headings.`;
+
+// Only the chosen setting is sent; nothing from the person's thoughts.
+export async function sleepStory({ setting, onText }) {
+  if (isDemo()) return demoStream(DEMO_STORY, onText);
+  const api = await getClient();
+  const stream = api.beta.messages.stream({
+    model: MODEL,
+    max_tokens: 4000,
+    output_config: { effort: 'low' },
+    system: STORY_SYSTEM,
+    messages: [{ role: 'user', content: `Tonight's setting: ${setting}.` }],
+    ...FALLBACK,
+  });
+  stream.on('text', (delta) => onText(delta));
+  const message = await stream.finalMessage();
+  checkStop(message);
+  return textOf(message);
+}
+
 // ---- Demo mode --------------------------------------------------------------
+
+const DEMO_STORY = 'You are walking slowly along a quiet garden path. The evening air is soft and cool. Somewhere nearby, water trickles over smooth stones. You pass a wooden bench and notice the grain of the wood, worn smooth by many quiet evenings. The lavender smells faintly sweet. A single lantern glows by the gate, warm and steady. You don’t need to go anywhere. The path curves gently, and you follow it without hurry. Leaves move a little in the breeze, then settle. The sky is a deep, calm blue. One star appears. Then another. Your steps grow slower. Your shoulders soften. The water keeps trickling, patient and even. You sit on the bench. The wood is warm. You breathe in the cool air, and breathe out. Everything is quiet. Everything can wait. The lantern glows. The garden rests. And so do you.';
+
 
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
