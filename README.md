@@ -46,7 +46,7 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
   Each tool ends by dimming the screen to near-black.
 - **Morning handoff.** At sunrise each star falls from the sky into your checklist, and a line sums up your night: "Last night you parked 3 thoughts and let go of 2. You slept on it." (Only the counts are kept.)
 - **Dream journal (AI).** Note last night's dream before it fades (typed or spoken). **Reflect with Claude** gives a gentle title, the feelings and themes it notices, a short grounded reflection, any echo of the thoughts you parked last night, and one question for the day. Claude is told dreams have no fixed hidden meanings, so there are no symbol dictionaries and no predictions. Past dreams are kept in a journal on your device.
-- **Your calendar.** Every night is saved as a day in a month calendar: what you parked (with notes), what became of each thought (done, let go, or still open), how many thoughts you let go that night (only the count, never the words), and the dream you noted the next morning.
+- **Your calendar.** Every night is saved as a day in a month calendar: what you parked (with notes), what became of each thought (done, let go, or still open), how many thoughts you let go that night (only the count, never the words), which sleep tools you used (and whether they ran to the end), and the dream you noted the next morning.
 - **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore, and watch it shimmer like a rainbow and burst into sparkles. When everything is done: "All clear. Have a good day." 
 - **Forgiving.** Every park or release can be undone for 5 seconds, which helps with half-asleep taps.
 - **Private by design.** No account and no server. Everything stays in your browser on your device, and released thoughts are never stored. The AI features use your own Anthropic API key (Settings, the ✦ button); only the thoughts you choose to talk through, speak, or plan are sent to Claude.
@@ -95,7 +95,7 @@ Plain HTML, CSS, and JavaScript with no framework and no build step. The only ru
 | `js/dreams.js` | The morning dream card: note (typed or spoken), reflect with Claude, edit, delete, and the dream journal |
 | `js/sleep.js` | Help me fall asleep: mind shuffle, sleep sounds, sleep story (read aloud with the browser's voice) |
 | `js/sounds.js` | Rain, ocean, and brown noise generated with the Web Audio API |
-| `tests/store.test.js` | 46 unit tests for `store.js` using Node's built-in test runner |
+| `tests/store.test.js` | 48 unit tests for `store.js` using Node's built-in test runner |
 
 Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts (with any notes), dreams and their reflections, a per-night history for the calendar (a night runs 5 am to 5 am; the newest 365 are kept), and last night's two counts. The API key is stored separately under `thoughtpark:apiKey`; conversations are never saved.
 

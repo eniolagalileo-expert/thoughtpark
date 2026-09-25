@@ -629,6 +629,14 @@ body[data-theme="morning"] .check-note, body[data-theme="morning"] .card-note { 
 .cal-marks { display: flex; gap: 3px; align-items: center; height: 10px; }
 .cal-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--glow); }
 .cal-moon { font-size: .7rem; line-height: 1; color: #8a7fd6; }
+.cal-z { font-size: .7rem; line-height: 1; font-weight: 800; font-style: italic; color: #4f9d8f; }
+.cal-day[aria-pressed="true"] .cal-z { color: var(--accent-ink); }
+.cal-aids { padding: 10px 12px; border-radius: 12px; background: rgba(79, 157, 143, .12); }
+.cal-aids-label { margin: 0 0 6px; font-weight: 700; color: #3f8a7d; font-size: .9rem; }
+.cal-aids ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cal-aids li { display: grid; gap: 1px; }
+.cal-aid-name { font-size: .9rem; font-weight: 600; }
+.cal-aid-meta { font-size: .8rem; color: var(--muted); }
 .cal-day[aria-pressed="true"] .cal-dot { background: var(--accent-ink); }
 .cal-day[aria-pressed="true"] .cal-moon { color: var(--accent-ink); }
 .cal-legend { margin: 0; font-size: .75rem; color: var(--muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }

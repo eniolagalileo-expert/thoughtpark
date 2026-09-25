@@ -41,9 +41,10 @@ function frame(className, children, onStop) {
 
 // ---- Mind shuffle ---------------------------------------------------------
 
-export function startShuffle(screen, { onStop, onDone }) {
+export function startShuffle(screen, { onStop, onDone, track }) {
   stopSleepTools();
   active = true;
+  track?.start('shuffle');
   const word = SHUFFLE_WORDS[Math.floor(Math.random() * SHUFFLE_WORDS.length)];
   const steps = shuffleSequence(word);
   const letters = el('p', { className: 'shuffle-word' }, [...word].map((l) => el('span', { textContent: l })));
@@ -84,7 +85,7 @@ export function startShuffle(screen, { onStop, onDone }) {
 
 // ---- Sleep sounds ---------------------------------------------------------
 
-export function startSounds(screen, { onStop, onDone }) {
+export function startSounds(screen, { onStop, onDone, track }) {
   stopSleepTools();
   active = true;
   if (!sounds.isSupported()) {
@@ -92,6 +93,7 @@ export function startSounds(screen, { onStop, onDone }) {
     return;
   }
   let minutes = 30;
+  let tracked = false;
   const status = el('p', { className: 'sounds-status', textContent: 'Choose a sound.' });
   status.setAttribute('role', 'status');
 
@@ -101,6 +103,9 @@ export function startSounds(screen, { onStop, onDone }) {
     button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', async () => {
       for (const b of soundButtons) b.setAttribute('aria-pressed', String(b === button));
+      const detail = `${s.label}, ${minutes} min timer`;
+      if (tracked) track?.update(detail);
+      else { track?.start('sounds', detail); tracked = true; }
       await sounds.play(s.id, minutes);
       status.textContent = `${s.label} is playing. It will fade out after ${minutes} minutes.`;
       document.body.classList.add('is-sleep-dim');
@@ -133,12 +138,15 @@ export function startSounds(screen, { onStop, onDone }) {
 
 // ---- Sleep story ----------------------------------------------------------
 
-export function startStory(screen, { onStop, onDone }) {
+export function startStory(screen, { onStop, onDone, track }) {
   stopSleepTools();
   active = true;
   const settings = STORY_SETTINGS.map((setting) => {
     const button = el('button', { type: 'button', className: 'chip chip-wide', textContent: setting[0].toUpperCase() + setting.slice(1) });
-    button.addEventListener('click', () => tellStory(screen, setting, { onStop, onDone }));
+    button.addEventListener('click', () => {
+      track?.start('story', setting);
+      tellStory(screen, setting, { onStop, onDone });
+    });
     return button;
   });
   screen.replaceChildren(frame('story', [

@@ -162,6 +162,7 @@ Added at the learner's request during final review ("Make the calendar and store
 - Every night is kept as a day in a calendar: the thoughts parked that night (with notes), what became of each (done, let go in the morning, or still open), how many thoughts were let go that night (count only; released text is never stored), and the dream noted the next morning with its reflection title.
 - A night runs from 5:00 am to 5:00 am, so a thought parked at 1 am belongs to the previous evening; a dream noted in the morning belongs to the night before.
 - "Your calendar" next to "How it works" opens a month view: days with parked thoughts show a dot, days with a dream show a small moon; today is outlined. Previous and next month buttons. Tapping a day shows that night's details; an empty day says so.
+- Each night also lists the sleep tools used (learner request: "Helping to fall asleep action should be added in calendar"): which tool, its choice (sound and timer, story setting), when it started, how long it ran, and whether it ran to the end or was stopped. Such nights get a small "z" mark.
 - Parked thoughts saved before the calendar existed are added to it automatically. The newest 365 nights are kept.
   - [ ] Parking, letting go, checking off, morning let go, notes, and undo all show correctly in that night's entry.
   - [ ] The calendar survives reloading; released thought text never appears in saved data.

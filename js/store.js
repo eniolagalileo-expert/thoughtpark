@@ -419,7 +419,7 @@ export function dreamNightKey(time) {
 }
 
 function emptyDay() {
-  return { parked: [], released: 0 };
+  return { parked: [], released: 0, aids: [] };
 }
 
 function pruneHistory(history) {
@@ -487,21 +487,55 @@ export function withHistoryBackfill(state) {
 export function nightDetails(state, key) {
   const day = state.history?.[key] ?? emptyDay();
   const dream = (state.dreams ?? []).find((d) => dreamNightKey(d.createdAt) === key) ?? null;
-  return { parked: day.parked, released: day.released, dream };
+  return { parked: day.parked, released: day.released, aids: day.aids ?? [], dream };
 }
 
-// Which nights in a month have something saved: { 'YYYY-MM-DD': { thoughts, dream } }.
+// Which nights in a month have something saved:
+// { 'YYYY-MM-DD': { thoughts, aids, dream } }.
 export function monthMarks(state, year, month) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
   const marks = {};
   for (const [key, day] of Object.entries(state.history ?? {})) {
-    if (key.startsWith(prefix) && (day.parked.length || day.released)) marks[key] = { thoughts: day.parked.length + day.released, dream: false };
+    const thoughts = day.parked.length + day.released;
+    const aids = (day.aids ?? []).length;
+    if (key.startsWith(prefix) && (thoughts || aids)) marks[key] = { thoughts, aids, dream: false };
   }
   for (const dream of state.dreams ?? []) {
     const key = dreamNightKey(dream.createdAt);
-    if (key.startsWith(prefix)) marks[key] = { thoughts: marks[key]?.thoughts ?? 0, dream: true };
+    if (key.startsWith(prefix)) marks[key] = { thoughts: marks[key]?.thoughts ?? 0, aids: marks[key]?.aids ?? 0, dream: true };
   }
   return marks;
+}
+
+// ---- Sleep aids on the calendar ----------------------------------------------
+
+export const SLEEP_AIDS = { breathe: 'Breathe', shuffle: 'Mind shuffle', sounds: 'Sleep sounds', story: 'Sleep story' };
+
+// A sleep tool was started tonight. Returns its id so it can be updated/ended.
+export function startSleepAid(state, tool, detail = '', now = Date.now()) {
+  const aid = { id: makeId(), tool, startedAt: now };
+  if (detail) aid.detail = detail;
+  const next = withDay(state, nightKey(now), (day) => ({ ...day, aids: [...(day.aids ?? []), aid] }));
+  return { state: next, id: aid.id };
+}
+
+function mapAid(state, id, fn) {
+  const history = state.history ?? {};
+  for (const [key, day] of Object.entries(history)) {
+    if ((day.aids ?? []).some((a) => a.id === id)) {
+      return { ...state, history: { ...history, [key]: { ...day, aids: day.aids.map((a) => (a.id === id ? fn(a) : a)) } } };
+    }
+  }
+  return state;
+}
+
+export function updateSleepAid(state, id, detail) {
+  return mapAid(state, id, (a) => ({ ...a, detail }));
+}
+
+// `finished`: the tool ran to its end (the screen dimmed) instead of being stopped.
+export function endSleepAid(state, id, { finished, now = Date.now() }) {
+  return mapAid(state, id, (a) => ({ ...a, minutes: Math.max(0, Math.round((now - a.startedAt) / 60000)), finished: Boolean(finished) }));
 }
 
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
@@ -520,7 +554,16 @@ function parseHistory(history) {
         return entry;
       })
       : [];
-    clean[key] = { parked, released: Number.isInteger(day.released) && day.released > 0 ? day.released : 0 };
+    const aids = Array.isArray(day.aids)
+      ? day.aids.filter((a) => a && typeof a.id === 'string' && a.tool in SLEEP_AIDS && Number.isFinite(a.startedAt)).map((a) => {
+        const aid = { id: a.id, tool: a.tool, startedAt: a.startedAt };
+        if (typeof a.detail === 'string' && a.detail) aid.detail = a.detail.slice(0, 120);
+        if (Number.isInteger(a.minutes) && a.minutes >= 0) aid.minutes = a.minutes;
+        if (typeof a.finished === 'boolean') aid.finished = a.finished;
+        return aid;
+      })
+      : [];
+    clean[key] = { parked, released: Number.isInteger(day.released) && day.released > 0 ? day.released : 0, aids };
   }
   return pruneHistory(clean);
 }

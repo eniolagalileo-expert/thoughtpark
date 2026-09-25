@@ -1,6 +1,6 @@
 // "Your calendar": a month of nights. Each night shows what was parked, what
 // became of it, how many thoughts were let go, and the dream noted after it.
-import { monthMarks, nightDetails, nightKey } from './store.js';
+import { monthMarks, nightDetails, nightKey, SLEEP_AIDS } from './store.js';
 
 const dialog = document.getElementById('calendar');
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -55,8 +55,9 @@ export function openCalendar({ getState }) {
     ]),
     grid,
     el('p', { className: 'cal-legend' }, [
-      el('span', { className: 'cal-dot' }), ' thoughts parked  ',
-      el('span', { className: 'cal-moon', textContent: '☾' }), ' dream noted',
+      el('span', { className: 'cal-dot' }), ' thoughts  ',
+      el('span', { className: 'cal-z', textContent: 'z' }), ' fell-asleep help  ',
+      el('span', { className: 'cal-moon', textContent: '☾' }), ' dream',
     ]),
     detail,
     el('p', { className: 'cal-privacy', textContent: 'Saved only on this device. Thoughts you let go at night are never stored, only counted.' }),
@@ -76,6 +77,7 @@ export function openCalendar({ getState }) {
         el('span', { className: 'cal-num', textContent: String(day) }),
         el('span', { className: 'cal-marks' }, [
           ...(mark?.thoughts ? [el('span', { className: 'cal-dot' })] : []),
+          ...(mark?.aids ? [el('span', { className: 'cal-z', textContent: 'z' })] : []),
           ...(mark?.dream ? [el('span', { className: 'cal-moon', textContent: '☾' })] : []),
         ]),
       ]);
@@ -83,7 +85,7 @@ export function openCalendar({ getState }) {
       if (key === tonight) button.classList.add('is-today');
       if (key === selected) button.setAttribute('aria-pressed', 'true');
       if (key > tonight) button.disabled = true;
-      button.setAttribute('aria-label', `${longDate(key)}${mark?.thoughts ? ', thoughts saved' : ''}${mark?.dream ? ', dream noted' : ''}`);
+      button.setAttribute('aria-label', `${longDate(key)}${mark?.thoughts ? ', thoughts saved' : ''}${mark?.aids ? ', sleep tools used' : ''}${mark?.dream ? ', dream noted' : ''}`);
       button.addEventListener('click', () => {
         selected = key;
         for (const b of grid.querySelectorAll('.cal-day')) b.removeAttribute('aria-pressed');
@@ -98,7 +100,7 @@ export function openCalendar({ getState }) {
   function renderDetail() {
     const night = nightDetails(getState(), selected);
     const parts = [el('h3', { className: 'cal-detail-title', textContent: `The night of ${longDate(selected)}` })];
-    if (!night.parked.length && !night.released && !night.dream) {
+    if (!night.parked.length && !night.released && !night.aids.length && !night.dream) {
       parts.push(el('p', { className: 'cal-empty', textContent: 'Nothing saved for this night.' }));
     }
     if (night.parked.length) {
@@ -114,6 +116,15 @@ export function openCalendar({ getState }) {
     if (night.released) {
       parts.push(el('p', { className: 'cal-released', textContent: `Let go of ${night.released} thought${night.released === 1 ? '' : 's'} that night.` }));
     }
+    if (night.aids.length) {
+      parts.push(el('div', { className: 'cal-aids' }, [
+        el('p', { className: 'cal-aids-label', textContent: 'Help falling asleep' }),
+        el('ul', {}, night.aids.map((a) => el('li', {}, [
+          el('span', { className: 'cal-aid-name', textContent: `${SLEEP_AIDS[a.tool]}${a.detail ? `: ${a.detail}` : ''}` }),
+          el('span', { className: 'cal-aid-meta', textContent: aidMeta(a) }),
+        ]))),
+      ]));
+    }
     if (night.dream) {
       parts.push(el('div', { className: 'cal-dream' }, [
         el('p', { className: 'cal-dream-label', textContent: `☾ Dream${night.dream.reflection ? `: ${night.dream.reflection.title}` : ''}` }),
@@ -126,4 +137,14 @@ export function openCalendar({ getState }) {
   renderMonth();
   renderDetail();
   dialog.showModal();
+}
+
+// "at 11:42 pm · 5 min · ran to the end"
+function aidMeta(aid) {
+  const time = new Date(aid.startedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const parts = [`at ${time}`];
+  if (Number.isInteger(aid.minutes)) parts.push(aid.minutes < 1 ? 'under a minute' : `${aid.minutes} min`);
+  if (aid.finished === true) parts.push('ran to the end');
+  else if (aid.finished === false) parts.push('stopped');
+  return parts.join(' · ');
 }

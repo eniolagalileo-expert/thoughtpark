@@ -8,6 +8,7 @@ import {
   shuffleSequence, SHUFFLE_WORDS, SHUFFLE_ITEMS,
   addDream, updateDream, deleteDream, setDreamReflection, dreamForDay, cleanDream, MAX_DREAMS,
   dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
+  startSleepAid, updateSleepAid, endSleepAid,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -427,7 +428,7 @@ test('dreams and marks appear on the calendar month', () => {
   let { state } = nightOf24();
   state = addDream(state, 'A long train', at(25, 7)).state;
   assert.equal(nightDetails(state, '2026-09-24').dream.text, 'A long train');
-  assert.deepEqual(monthMarks(state, 2026, 8), { '2026-09-24': { thoughts: 4, dream: true } });
+  assert.deepEqual(monthMarks(state, 2026, 8), { '2026-09-24': { thoughts: 4, aids: 0, dream: true } });
   assert.deepEqual(monthMarks(state, 2026, 9), {});
   assert.equal(nightDetails(state, '2026-09-20').parked.length, 0);
 });
@@ -453,5 +454,28 @@ test('history is capped and cleaned when loaded', () => {
   save(storage, state);
   assert.equal(Object.keys(load(storage).history).length, MAX_HISTORY_DAYS);
   const parsed = parseState(JSON.stringify({ history: { 'bad-key': {}, '2026-09-24': { parked: [{ id: 'x', text: 'y', outcome: 'weird' }, { nope: 1 }], released: -2 } } }));
-  assert.deepEqual(parsed.history, { '2026-09-24': { parked: [{ id: 'x', text: 'y' }], released: 0 } });
+  assert.deepEqual(parsed.history, { '2026-09-24': { parked: [{ id: 'x', text: 'y' }], released: 0, aids: [] } });
+});
+
+test('sleep tools used at night are kept on that night', () => {
+  let { state } = nightOf24();
+  let started = startSleepAid(state, 'shuffle', '', at(25, 0, 50));
+  state = endSleepAid(started.state, started.id, { finished: true, now: at(25, 0, 55) });
+  started = startSleepAid(state, 'sounds', 'Rain, 30 min timer', at(25, 1));
+  state = updateSleepAid(started.state, started.id, 'Ocean, 15 min timer');
+  state = endSleepAid(state, started.id, { finished: false, now: at(25, 1, 2) });
+  const aids = nightDetails(state, '2026-09-24').aids;
+  assert.deepEqual(aids.map((a) => [a.tool, a.detail ?? '', a.minutes, a.finished]), [['shuffle', '', 5, true], ['sounds', 'Ocean, 15 min timer', 2, false]]);
+  assert.equal(monthMarks(state, 2026, 8)['2026-09-24'].aids, 2);
+});
+
+test('a night with only a sleep tool is still marked, and aids survive saving', () => {
+  const started = startSleepAid(emptyState(), 'breathe', '', at(20, 23));
+  const state = endSleepAid(started.state, started.id, { finished: true, now: at(20, 23, 1) });
+  assert.deepEqual(monthMarks(state, 2026, 8), { '2026-09-20': { thoughts: 0, aids: 1, dream: false } });
+  const storage = memoryStorage();
+  save(storage, state);
+  assert.deepEqual(load(storage).history['2026-09-20'].aids[0], { id: started.id, tool: 'breathe', startedAt: at(20, 23), minutes: 1, finished: true });
+  const parsed = parseState(JSON.stringify({ history: { '2026-09-20': { parked: [], aids: [{ id: 'a', tool: 'bogus', startedAt: 1 }, { id: 'b', tool: 'story', startedAt: 2, detail: 'a garden', minutes: -1 }] } } }));
+  assert.deepEqual(parsed.history['2026-09-20'].aids, [{ id: 'b', tool: 'story', startedAt: 2, detail: 'a garden' }]);
 });

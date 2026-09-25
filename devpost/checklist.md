@@ -142,6 +142,7 @@ Build mode: fast (learner approved)
 - [x] Morning Let go shines: rainbow shimmer across the card plus a burst of rainbow sparkles as it fades — learner request ("it should be shine as a rainbow or spark or sun ray"); verified sparkles appear and clean up, shimmer and release animations run, reduced motion falls back to a fade.
 - [x] AI companion (slices 7–9) — learner asked for a richer idea with LLM chat; approved Talk it through, voice, morning plan, and safety. Verified against an intercepted API (request shape, streaming, errors, crisis handling, demo mode); not yet run against the live API because no key was available to the agent.
 - [x] Welcome guide for first-time visitors plus "How it works" links — learner request at final review. Verified: opens once on first visit, four steps with keyboard support, Skip/Escape/Start all remember it, reopens from both screens.
+- [x] Sleep tools recorded in the calendar — learner request at final review. Verified with 2 unit tests and 11 browser checks; fixed a bug found by the test where switching screens mid-tool left the entry open.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

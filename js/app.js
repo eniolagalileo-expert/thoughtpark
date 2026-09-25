@@ -2,7 +2,8 @@
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
-  setNote, crisisCheck, splitLocally, withHistoryBackfill, MAX_LENGTH,
+  setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
+  MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
@@ -45,6 +46,26 @@ let promptTimer = null;
 let promptIndex = 0;
 
 let breathingFrame = null;
+
+// The sleep tool running now, recorded on tonight's calendar entry.
+let currentAid = null;
+const aidTracker = {
+  start(tool, detail = '') {
+    endAid(false);
+    const started = startSleepAid(state, tool, detail);
+    commit(started.state);
+    currentAid = started.id;
+  },
+  update(detail) {
+    if (currentAid) commit(updateSleepAid(state, currentAid, detail));
+  },
+};
+
+function endAid(finished) {
+  if (!currentAid) return;
+  commit(endSleepAid(state, currentAid, { finished }));
+  currentAid = null;
+}
 
 function commit(next) {
   state = next;
@@ -100,6 +121,7 @@ function setMode(next) {
   stopBreathing();
   hideStarInfo();
   recognition?.abort();
+  endAid(false);
   document.body.classList.remove('is-all-clear', 'is-goodnight');
   for (const flyer of document.querySelectorAll('.falling-star')) flyer.remove();
   if (mode === 'night') renderNight();
@@ -450,7 +472,11 @@ function renderGoodnight() {
     button.addEventListener('click', () => { clearUndo(); start(); });
     return button;
   };
-  const ends = { onStop: renderGoodnight, onDone: renderSleep };
+  const ends = {
+    onStop: () => { endAid(false); renderGoodnight(); },
+    onDone: () => { endAid(true); renderSleep(); },
+    track: aidTracker,
+  };
   const tools = el('section', { className: 'sleep-tools' }, [
     el('h2', { className: 'sleep-tools-title', textContent: 'Help me fall asleep' }),
     el('div', { className: 'sleep-grid' }, [
@@ -478,11 +504,12 @@ const ease = (t) => 0.5 - Math.cos(Math.PI * t) / 2;
 
 function renderBreathing() {
   clearUndo();
+  aidTracker.start('breathe');
   const circle = el('div', { className: 'breath-circle' });
   const label = el('p', { className: 'breath-label', textContent: 'Breathe in' });
   const remaining = el('p', { className: 'breath-remaining' });
   const stop = el('button', { type: 'button', className: 'link-button', textContent: 'Stop' });
-  stop.addEventListener('click', renderGoodnight);
+  stop.addEventListener('click', () => { endAid(false); renderGoodnight(); });
 
   screen.replaceChildren(el('section', { className: 'breathing' }, [
     el('div', { className: 'breath-stage' }, circle),
@@ -497,6 +524,7 @@ function renderBreathing() {
     const breath = breathPhase(now - start);
     if (breath.done) {
       breathingFrame = null;
+      endAid(true);
       renderSleep();
       return;
     }
