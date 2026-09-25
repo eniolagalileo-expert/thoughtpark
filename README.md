@@ -25,6 +25,8 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
 
 ## What it does
 
+- **A welcome guide.** First-time visitors get a four-step introduction (empty your mind, park or let go, talk it through, wake up to your list). "How it works" under each screen title brings it back.
+
 - **Park or let go.** Each thought becomes a card. "Let it go" makes it blur and drift away, and it's never saved. "Tomorrow" parks it.
 - **Moon and sun.** A crescent moon watches over the night; in the morning it sets and the sun rises in its place.
 - **Your thoughts become stars.** Every parked thought appears as a star in the night sky behind the app, always in the same place. Hover over a star (or tap it on a phone) to see which thought it is and when you parked it. Letting a thought go sends a shooting star across the sky.
@@ -79,7 +81,8 @@ Plain HTML, CSS, and JavaScript with no framework and no build step. The only ru
 | `js/app.js` | Screens and interactions: Night, Goodnight, Breathing, Morning (falling stars, sun-ray burst, All clear, plan), undo, prompts, voice |
 | `js/ai.js` | Claude calls: streamed Talk it through, notes, voice splitting, morning plan (structured JSON outputs), demo mode, key storage |
 | `js/companion.js` | The Talk it through, Settings, and 988 support panels |
-| `tests/store.test.js` | 31 unit tests for `store.js` using Node's built-in test runner |
+| `js/guide.js` | The four-step welcome guide for first-time visitors |
+| `tests/store.test.js` | 32 unit tests for `store.js` using Node's built-in test runner |
 
 Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts (with any notes) plus last night's two counts. The API key is stored separately under `thoughtpark:apiKey`; conversations are never saved.
 

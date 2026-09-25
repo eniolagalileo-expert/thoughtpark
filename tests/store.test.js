@@ -289,3 +289,12 @@ test('splitLocally keeps short fragments with the previous thought', () => {
   assert.deepEqual(splitLocally(''), []);
   assert.deepEqual(splitLocally(undefined), []);
 });
+
+test('the welcome guide is remembered once seen', () => {
+  const storage = memoryStorage();
+  assert.equal(emptyState().seenGuide, false);
+  save(storage, { ...emptyState(), seenGuide: true });
+  assert.equal(load(storage).seenGuide, true);
+  assert.equal(parseState('{"seenGuide":"yes"}').seenGuide, true);
+  assert.equal(parseState('{}').seenGuide, false);
+});

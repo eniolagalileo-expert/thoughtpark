@@ -5,7 +5,7 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false, night: emptyNight() };
+  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight() };
 }
 
 // Only counts are kept about last night, never the released text.
@@ -131,6 +131,7 @@ export function parseState(raw) {
         ? data.parked.filter(isThought).map((t) => ({ ...withValidNote(t), done: Boolean(t.done) }))
         : [],
       seenHint: Boolean(data.seenHint),
+      seenGuide: Boolean(data.seenGuide),
       night: parseNight(data.night),
     };
   } catch {

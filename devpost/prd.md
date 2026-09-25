@@ -147,6 +147,7 @@ Added at the learner's request during final review; learner approved features 1,
   - [ ] Crisis wording always shows the 988 card and never calls the API.
 
 ## States and Boundaries
+- **First visit guide:** on the very first visit, a short welcome guide opens: four steps (empty your mind, park or let go, talk it through, wake up to your list) with Back, Next, and Skip, and a note that everything stays on the device. It never opens again by itself; a "How it works" link under each screen title reopens it. (Added at the learner's request during final review: "When the user who is the first in this website visit… he will misunderstand what it is.")
 - **First use:** the Night screen shows a one-line hint under the box: "Type each thought, then park it. They'll be waiting in the morning."
 - **Nothing to park yet:** the Night screen shows only the text box and the hint.
 - **Morning with nothing parked:** "Nothing was parked. Clear mind, clear day." and a link to the Night screen.

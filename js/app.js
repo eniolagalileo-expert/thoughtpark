@@ -6,6 +6,7 @@ import {
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
+import { openGuide } from './guide.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -109,6 +110,17 @@ toggle.addEventListener('click', (event) => {
 
 document.getElementById('open-settings').addEventListener('click', () => openSettings());
 
+function showGuide() {
+  openGuide({ onClose: () => { if (!state.seenGuide) commit({ ...state, seenGuide: true }); } });
+}
+
+// A small "How it works" link that reopens the welcome guide.
+function howItWorks() {
+  const link = el('button', { type: 'button', className: 'how-link', textContent: 'How it works' });
+  link.addEventListener('click', showGuide);
+  return link;
+}
+
 // A note saved from Talk it through, shown under the thought.
 function noteLine(thought, className) {
   return thought.note ? [el('span', { className, textContent: thought.note })] : [];
@@ -211,6 +223,7 @@ function renderNight({ keepSession = false } = {}) {
 
   screen.replaceChildren(
     el('h1', { className: 'screen-title', textContent: 'Park your thoughts for tonight' }),
+    howItWorks(),
     form,
     hint,
     voiceStatus,
@@ -511,7 +524,7 @@ function renderMorning({ animate = true } = {}) {
   });
   toNight.addEventListener('click', () => setMode('night'));
 
-  const header = [el('h1', { className: 'screen-title', textContent: 'Good morning' })];
+  const header = [el('h1', { className: 'screen-title', textContent: 'Good morning' }), howItWorks()];
   if (summaryText) {
     header.push(el('p', { className: 'morning-summary', id: 'morning-summary', textContent: summaryText }));
   }
@@ -754,4 +767,8 @@ if (!save(storage, state)) showSavingOff();
 updateSky();
 // Wait two frames so the page first paints as night; opening in the morning
 // then plays the sunrise transition.
-requestAnimationFrame(() => requestAnimationFrame(() => setMode(mode)));
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  setMode(mode);
+  // First visit: explain what ThoughtPark is before anything else.
+  if (!state.seenGuide) showGuide();
+}));

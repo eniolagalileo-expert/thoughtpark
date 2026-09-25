@@ -115,6 +115,10 @@ PRD ref: `prd.md > AI companion` (Safety).
 - Morning plan: button + card above the morning list.
 PRD ref: `prd.md > AI companion`.
 
+### Welcome guide (`js/guide.js`)
+A four-step `<dialog>` guide with Back / Next / Skip and step dots, opened on load when `state.seenGuide` is false and from "How it works" links. Closing it by any means sets `seenGuide: true`.
+PRD ref: `prd.md > States and Boundaries` (First visit guide).
+
 ### Undo toast
 After release or park, shows "Released · Undo" or "Parked · Undo" for 5 seconds; Undo calls `restore()`. Only the most recent action can be undone.
 PRD ref: `prd.md > Parking thoughts (the kernel)`.
@@ -148,6 +152,8 @@ build-with-ai/
 │   ├── store.js        # Pure data logic, prompts, breathing timing, star positions, load/save (tested)
 │   ├── sky.js          # Night sky layer: stars, shooting stars, sunrise
 │   ├── ai.js           # Claude calls (talk, note, split, plan), demo mode, key storage
+│   ├── companion.js    # Talk it through, Settings, and 988 panels
+│   ├── guide.js        # First-visit welcome guide
 │   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing
 ├── tests/
 │   └── store.test.js   # node --test unit tests for store.js
