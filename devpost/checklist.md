@@ -29,7 +29,7 @@ Build mode: fast (learner approved)
   Learner check: Park two thoughts, close the tab, reopen it, and press "Morning". Both thoughts should be there; tick one off.
   Commit: `Add morning list with saved parked thoughts`
 
-- [ ] **3. The night ends calmly and mistakes can be undone**
+- [x] **3. The night ends calmly and mistakes can be undone**
   Becomes usable: Parking the last card brings up "All parked. Goodnight." with counts; a 5-second Undo appears after every park or release; first-use hint, empty-morning message, and the "saving is off" notice all appear when they should.
   Why now: These complete the journey and the states the PRD calls out, on top of a working kernel.
   PRD ref: `prd.md > Goodnight`, `prd.md > Parking thoughts (the kernel)` (Undo), `prd.md > States and Boundaries`
@@ -93,3 +93,4 @@ Activity mode:
 ## Revisions
 
 - Added slices 4 (night sky and gentle prompts) and 5 (breathing moment); polish became slice 6 — at the first checkpoint the learner asked to improve the idea and approved three additions, recorded in `scope.md`, `prd.md`, and `spec.md`.
+- Undo restores a saved copy of the state from just before the action instead of a `restore()` helper, and is verified in the browser rather than a unit test — this reverses the action exactly, including checked-off morning items that parking clears.
