@@ -139,6 +139,7 @@ export function parseState(raw) {
       history: parseHistory(data.history),
       recurring: parseRecurring(data.recurring),
       settings: parseSettings(data.settings),
+      ...(typeof data.remindedNight === 'string' && DAY_KEY.test(data.remindedNight) ? { remindedNight: data.remindedNight } : {}),
     };
   } catch {
     return emptyState();
@@ -752,4 +753,59 @@ function parseSettings(settings) {
 // Is it within the hour the person set aside for worry time?
 export function isWorryTime(state, now = Date.now()) {
   return new Date(now).getHours() === (state.settings ?? DEFAULT_SETTINGS).worryHour;
+}
+
+// ---- Bedtime reminder ---------------------------------------------------------
+
+function pad(n) {
+  return String(n).padStart(2, '0');
+}
+
+// A daily repeating calendar event with an alert at bedtime, so the phone's
+// own calendar reminds the person even when ThoughtPark is closed.
+export function bedtimeIcs(bedtime, now = Date.now(), url = '') {
+  const [hour, minute] = bedtime.split(':').map(Number);
+  const start = new Date(now);
+  start.setHours(hour, minute, 0, 0);
+  if (start.getTime() <= now) start.setDate(start.getDate() + 1);
+  const local = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const stamp = new Date(now).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//ThoughtPark//Bedtime reminder//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:thoughtpark-bedtime-${now}@thoughtpark`,
+    `DTSTAMP:${stamp}`,
+    `DTSTART:${local(start)}`,
+    'DURATION:PT15M',
+    'RRULE:FREQ=DAILY',
+    'SUMMARY:Park your thoughts (ThoughtPark)',
+    `DESCRIPTION:Time to wind down. Park what's on your mind${url ? `: ${url}` : '.'}`,
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    'TRIGGER:PT0M',
+    'DESCRIPTION:Time to park your thoughts',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+    '',
+  ].join('\r\n');
+}
+
+// Show the in-app bedtime reminder once per night, within an hour after bedtime.
+export function bedtimeReminderDue(state, now = Date.now()) {
+  const settings = state.settings ?? DEFAULT_SETTINGS;
+  if (!settings.remind) return false;
+  const [hour, minute] = settings.bedtime.split(':').map(Number);
+  const due = new Date(now);
+  due.setHours(hour, minute, 0, 0);
+  if (due.getTime() > now) due.setDate(due.getDate() - 1);
+  const since = now - due.getTime();
+  return since >= 0 && since < 3600e3 && state.remindedNight !== nightKey(due.getTime());
+}
+
+export function markReminded(state, now = Date.now()) {
+  return { ...state, remindedNight: nightKey(now) };
 }

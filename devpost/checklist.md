@@ -179,7 +179,7 @@ Build mode: fast (learner approved)
   Learner check: Open Talk it through and turn on Voice mode.
   Commit: `Add eyes-closed voice mode`
 
-- [ ] **18. Install as an app, with a bedtime reminder**
+- [x] **18. Install as an app, with a bedtime reminder**
   Becomes usable: Installable, works offline, bedtime reminder in-app and as a calendar event.
   Why now: Last: wraps the finished app.
   PRD ref: `prd.md > More ideas (learner-approved batch)`
@@ -229,3 +229,5 @@ Activity mode:
 - Added slice 12 (calendar) at the learner's request during final review.
 - Added slices 13–18 (six more ideas) at the learner's request during final review.
 - Recurring worries are grouped: a key word whose thoughts are already covered by another card (shown or hidden) is skipped, so "passport renewal" makes one card — found by the unit test.
+- Worry time defaults to 4 pm and is limited to 8 am–4 pm, because the app switches to Night at 5 pm and worry time lives on the Morning screen.
+- The Settings panel is titled "Settings" now that it holds bedtime, worry time, and install as well as the API key.

@@ -4,7 +4,8 @@ import {
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
   setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
   addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, lastNightKey, rateNight, nightDetails,
-  recurringWorries, dismissRecurring, setRecurringPlan, isWorryTime, updateSettings, MAX_LENGTH,
+  recurringWorries, dismissRecurring, setRecurringPlan, isWorryTime, updateSettings,
+  bedtimeReminderDue, markReminded, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
@@ -139,7 +140,49 @@ toggle.addEventListener('click', (event) => {
 document.getElementById('open-settings').addEventListener('click', () => openSettings({
   getSettings: () => state.settings,
   setSettings: (patch) => commit(updateSettings(state, patch)),
+  installPrompt: () => installPrompt,
 }));
+
+// ---- Install as an app, and the bedtime reminder --------------------------------
+
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  installPrompt = event;
+});
+window.addEventListener('appinstalled', () => { installPrompt = null; });
+
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  navigator.serviceWorker.register('./sw.js').catch(() => { /* works without offline support */ });
+}
+
+// While ThoughtPark is open, remind once at bedtime (a notification if allowed,
+// and a banner either way).
+function checkBedtime() {
+  if (!bedtimeReminderDue(state)) return;
+  commit(markReminded(state));
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('Time to park your thoughts', { body: 'Empty your mind before bed. It only takes a minute.', icon: 'icons/icon-192.png', tag: 'thoughtpark-bedtime' });
+    } catch { /* some browsers only allow notifications from the service worker */ }
+  }
+  showBedtimeBanner();
+}
+
+function showBedtimeBanner() {
+  const banner = el('div', { className: 'bedtime-banner', id: 'bedtime-banner' }, [
+    el('span', { textContent: 'It’s bedtime. Park your thoughts?' }),
+  ]);
+  const go = el('button', { type: 'button', className: 'toast-undo', textContent: 'Start' });
+  go.addEventListener('click', () => { banner.remove(); setMode('night'); });
+  const dismiss = el('button', { type: 'button', className: 'toast-undo', textContent: 'Later' });
+  dismiss.addEventListener('click', () => banner.remove());
+  banner.append(go, dismiss);
+  document.getElementById('bedtime-banner')?.remove();
+  document.body.append(banner);
+}
+
+setInterval(checkBedtime, 30 * 1000);
 
 function showGuide() {
   openGuide({ onClose: () => { if (!state.seenGuide) commit({ ...state, seenGuide: true }); } });
@@ -954,4 +997,5 @@ requestAnimationFrame(() => requestAnimationFrame(() => {
   setMode(mode);
   // First visit: explain what ThoughtPark is before anything else.
   if (!state.seenGuide) showGuide();
+  checkBedtime();
 }));

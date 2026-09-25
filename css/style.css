@@ -1135,6 +1135,28 @@ body[data-theme="morning"] .talk-button { color: #8a5d0c; border-color: rgba(217
 .crisis a:not(.btn) { color: inherit; }
 
 /* Settings */
+.settings-check { display: flex; align-items: center; gap: 8px; font-size: .9rem; cursor: pointer; }
+.settings-check input { width: 20px; height: 20px; accent-color: var(--accent); }
+
+/* Bedtime banner */
+.bedtime-banner {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  z-index: 7;
+  width: min(432px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  animation: card-enter 400ms var(--ease) both;
+}
+.bedtime-banner span { flex: 1; }
 .settings-field { display: flex; flex-direction: column; gap: 6px; }
 .settings-select, .settings-time {
   min-height: 44px; padding: 0 12px; border-radius: 14px;

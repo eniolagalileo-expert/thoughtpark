@@ -1,5 +1,5 @@
 // The AI companion's panels: Talk it through, Settings, and the 988 crisis card.
-import { crisisCheck } from './store.js';
+import { crisisCheck, bedtimeIcs } from './store.js';
 import {
   talkStream, noteFor, friendlyError, isDemo, getKey, setKey, removeKey,
 } from './ai.js';
@@ -266,7 +266,7 @@ export function openTalk({ thought, mode, onSave }) {
 // ---- Settings ---------------------------------------------------------------
 
 // getSettings()/setSettings(patch) read and save the app's settings.
-export function openSettings({ onChange, getSettings, setSettings } = {}) {
+export function openSettings({ onChange, getSettings, setSettings, installPrompt } = {}) {
   const render = () => {
     const key = getKey();
     const input = el('input', {
@@ -295,7 +295,7 @@ export function openSettings({ onChange, getSettings, setSettings } = {}) {
 
     settingsDialog.replaceChildren(
       el('header', { className: 'sheet-header' }, [
-        el('h2', { id: 'settings-title', className: 'sheet-title', textContent: 'AI companion' }),
+        el('h2', { id: 'settings-title', className: 'sheet-title', textContent: 'Settings' }),
         closeButton(settingsDialog),
       ]),
       el('p', { textContent: 'Talk it through, voice input, and the morning plan use Claude, Anthropic’s AI, with your own API key.' }),
@@ -306,7 +306,7 @@ export function openSettings({ onChange, getSettings, setSettings } = {}) {
         el('a', { href: 'https://console.anthropic.com/settings/keys', target: '_blank', rel: 'noopener', textContent: 'console.anthropic.com' }),
         '. Usage costs a few cents per night.',
       ]),
-      ...(getSettings ? [worryHourField()] : []),
+      ...(getSettings ? [worryHourField(), bedtimeField(), installField()] : []),
       el('ul', { className: 'settings-notes' }, [
         el('li', { textContent: 'Your key is stored only in this browser and sent only to Anthropic.' }),
         el('li', { textContent: 'Only thoughts you choose to talk through, speak, or plan are sent to Claude. Everything else stays on this device.' }),
@@ -327,6 +327,54 @@ export function openSettings({ onChange, getSettings, setSettings } = {}) {
       select,
       el('p', { className: 'settings-small', textContent: 'At this hour the Morning screen suggests a 15-minute worry time.' }),
     ]);
+  }
+
+  function bedtimeField() {
+    const settings = getSettings();
+    const time = el('input', { id: 'bedtime', type: 'time', className: 'settings-time', value: settings.bedtime });
+    time.addEventListener('change', () => { if (time.value) setSettings({ bedtime: time.value }); });
+    const remind = el('input', { id: 'bedtime-remind', type: 'checkbox', checked: settings.remind });
+    const note = el('p', { className: 'settings-small', id: 'remind-note' });
+    remind.addEventListener('change', async () => {
+      setSettings({ remind: remind.checked });
+      note.textContent = '';
+      if (remind.checked && 'Notification' in window && Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') note.textContent = 'Notifications are off, so you’ll see a banner in ThoughtPark instead.';
+      }
+    });
+    const ics = el('button', { type: 'button', className: 'btn btn-quiet', id: 'bedtime-ics', textContent: 'Add to my calendar' });
+    ics.addEventListener('click', () => {
+      const url = location.href.split('#')[0];
+      const blob = new Blob([bedtimeIcs(getSettings().bedtime, Date.now(), url)], { type: 'text/calendar' });
+      const link = el('a', { href: URL.createObjectURL(blob), download: 'thoughtpark-bedtime.ics' });
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+      note.textContent = 'Open the downloaded file to add it to your calendar. It repeats every day and alerts you at bedtime, even when ThoughtPark is closed.';
+    });
+    return el('div', { className: 'settings-field' }, [
+      el('label', { htmlFor: 'bedtime', className: 'settings-label', textContent: 'Bedtime' }),
+      time,
+      el('label', { className: 'settings-check' }, [remind, ' Remind me while ThoughtPark is open']),
+      el('p', { className: 'settings-small', textContent: 'For a reminder even when ThoughtPark is closed, add a daily bedtime event to your phone’s calendar:' }),
+      ics,
+      note,
+    ]);
+  }
+
+  function installField() {
+    const prompt = installPrompt?.();
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return el('p', { className: 'settings-small', textContent: 'ThoughtPark is installed as an app on this device.' });
+    }
+    if (prompt) {
+      const install = el('button', { type: 'button', className: 'btn btn-primary', id: 'install-app', textContent: 'Install ThoughtPark as an app' });
+      install.addEventListener('click', async () => { await prompt.prompt(); });
+      return el('div', { className: 'settings-field' }, [install, el('p', { className: 'settings-small', textContent: 'It opens from your home screen and works offline (the AI needs a connection).' })]);
+    }
+    return el('p', { className: 'settings-small', textContent: 'To install: in Chrome, use the install icon in the address bar; on iPhone, tap Share → Add to Home Screen. It works offline, except the AI.' });
   }
 
   function removeButton() {

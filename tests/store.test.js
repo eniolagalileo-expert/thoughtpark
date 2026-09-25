@@ -11,6 +11,7 @@ import {
   startSleepAid, updateSleepAid, endSleepAid, addGoodThing, goodThingsTonight, MAX_GOOD_THINGS,
   lastNightKey, rateNight, ratingStats, keyWords, wordNights, weekSummary, weekHasData,
   recurringWorries, dismissRecurring, setRecurringPlan, updateSettings, isWorryTime, DEFAULT_SETTINGS,
+  bedtimeIcs, bedtimeReminderDue, markReminded,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -610,4 +611,32 @@ test('worry time is the chosen hour', () => {
   const state = updateSettings(emptyState(), { worryHour: 16 });
   assert.equal(isWorryTime(state, at(25, 16, 20)), true);
   assert.equal(isWorryTime(state, at(25, 17, 0)), false);
+});
+
+// ---- Bedtime reminder --------------------------------------------------------------
+
+test('the bedtime calendar event repeats daily with an alert', () => {
+  const ics = bedtimeIcs('22:30', at(25, 9), 'https://example.com');
+  const lines = ics.split('\r\n');
+  assert.equal(lines[0], 'BEGIN:VCALENDAR');
+  assert.ok(lines.includes('DTSTART:20260925T223000'));
+  assert.ok(lines.includes('RRULE:FREQ=DAILY'));
+  assert.ok(lines.includes('BEGIN:VALARM') && lines.includes('TRIGGER:PT0M'));
+  assert.ok(lines.some((l) => l.startsWith('DESCRIPTION:') && l.includes('https://example.com')));
+  assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
+  assert.ok(bedtimeIcs('22:30', at(25, 23)).includes('DTSTART:20260926T223000'));
+});
+
+test('the in-app reminder is due once, within an hour after bedtime', () => {
+  let state = updateSettings(emptyState(), { bedtime: '22:30', remind: true });
+  assert.equal(bedtimeReminderDue(state, at(25, 22, 20)), false);
+  assert.equal(bedtimeReminderDue(state, at(25, 22, 31)), true);
+  assert.equal(bedtimeReminderDue(state, at(25, 23, 45)), false);
+  state = markReminded(state, at(25, 22, 31));
+  assert.equal(bedtimeReminderDue(state, at(25, 22, 50)), false);
+  assert.equal(bedtimeReminderDue(state, at(26, 22, 35)), true);
+  assert.equal(bedtimeReminderDue(updateSettings(state, { remind: false }), at(26, 22, 35)), false);
+  // A bedtime just after midnight still works
+  const late = updateSettings(emptyState(), { bedtime: '00:15', remind: true });
+  assert.equal(bedtimeReminderDue(late, at(26, 0, 20)), true);
 });
