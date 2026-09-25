@@ -8,7 +8,7 @@ import {
   shuffleSequence, SHUFFLE_WORDS, SHUFFLE_ITEMS,
   addDream, updateDream, deleteDream, setDreamReflection, dreamForDay, cleanDream, MAX_DREAMS,
   dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
-  startSleepAid, updateSleepAid, endSleepAid,
+  startSleepAid, updateSleepAid, endSleepAid, addGoodThing, goodThingsTonight, MAX_GOOD_THINGS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -454,7 +454,7 @@ test('history is capped and cleaned when loaded', () => {
   save(storage, state);
   assert.equal(Object.keys(load(storage).history).length, MAX_HISTORY_DAYS);
   const parsed = parseState(JSON.stringify({ history: { 'bad-key': {}, '2026-09-24': { parked: [{ id: 'x', text: 'y', outcome: 'weird' }, { nope: 1 }], released: -2 } } }));
-  assert.deepEqual(parsed.history, { '2026-09-24': { parked: [{ id: 'x', text: 'y' }], released: 0, aids: [] } });
+  assert.deepEqual(parsed.history, { '2026-09-24': { parked: [{ id: 'x', text: 'y' }], released: 0, aids: [], good: [] } });
 });
 
 test('sleep tools used at night are kept on that night', () => {
@@ -478,4 +478,16 @@ test('a night with only a sleep tool is still marked, and aids survive saving', 
   assert.deepEqual(load(storage).history['2026-09-20'].aids[0], { id: started.id, tool: 'breathe', startedAt: at(20, 23), minutes: 1, finished: true });
   const parsed = parseState(JSON.stringify({ history: { '2026-09-20': { parked: [], aids: [{ id: 'a', tool: 'bogus', startedAt: 1 }, { id: 'b', tool: 'story', startedAt: 2, detail: 'a garden', minutes: -1 }] } } }));
   assert.deepEqual(parsed.history['2026-09-20'].aids, [{ id: 'b', tool: 'story', startedAt: 2, detail: 'a garden' }]);
+});
+
+test('up to three good things are kept on tonight', () => {
+  let state = emptyState();
+  for (const g of ['Coffee with Sam', '  a long walk  ', 'Finished the draft', 'One too many']) state = addGoodThing(state, g, at(24, 22));
+  assert.deepEqual(goodThingsTonight(state, at(25, 1)), ['Coffee with Sam', 'a long walk', 'Finished the draft']);
+  assert.equal(MAX_GOOD_THINGS, 3);
+  assert.equal(addGoodThing(state, '   ', at(24, 22)), state);
+  assert.deepEqual(nightDetails(state, '2026-09-24').good.length, 3);
+  const storage = memoryStorage();
+  save(storage, state);
+  assert.deepEqual(load(storage).history['2026-09-24'].good, ['Coffee with Sam', 'a long walk', 'Finished the draft']);
 });

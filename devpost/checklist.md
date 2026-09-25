@@ -129,7 +129,7 @@ Build mode: fast (learner approved)
   Learner check: Open Your calendar and tap today.
   Commit: `Add a calendar of every night`
 
-- [ ] **13. Three good things**
+- [x] **13. Three good things**
   Becomes usable: Note up to three good things on the Goodnight screen; they show in the calendar.
   Why now: Smallest of the batch; its data feeds the weekly insights.
   PRD ref: `prd.md > More ideas (learner-approved batch)`

@@ -419,7 +419,7 @@ export function dreamNightKey(time) {
 }
 
 function emptyDay() {
-  return { parked: [], released: 0, aids: [] };
+  return { parked: [], released: 0, aids: [], good: [] };
 }
 
 function pruneHistory(history) {
@@ -487,7 +487,7 @@ export function withHistoryBackfill(state) {
 export function nightDetails(state, key) {
   const day = state.history?.[key] ?? emptyDay();
   const dream = (state.dreams ?? []).find((d) => dreamNightKey(d.createdAt) === key) ?? null;
-  return { parked: day.parked, released: day.released, aids: day.aids ?? [], dream };
+  return { parked: day.parked, released: day.released, aids: day.aids ?? [], good: day.good ?? [], rating: day.rating ?? null, dream };
 }
 
 // Which nights in a month have something saved:
@@ -563,7 +563,25 @@ function parseHistory(history) {
         return aid;
       })
       : [];
-    clean[key] = { parked, released: Number.isInteger(day.released) && day.released > 0 ? day.released : 0, aids };
+    const good = Array.isArray(day.good) ? day.good.filter((g) => typeof g === 'string' && g.trim()).map((g) => g.slice(0, MAX_LENGTH)).slice(0, MAX_GOOD_THINGS) : [];
+    clean[key] = { parked, released: Number.isInteger(day.released) && day.released > 0 ? day.released : 0, aids, good };
+    if (Number.isInteger(day.rating) && day.rating >= 1 && day.rating <= 5) clean[key].rating = day.rating;
   }
   return pruneHistory(clean);
+}
+
+// ---- Three good things ------------------------------------------------------
+
+export const MAX_GOOD_THINGS = 3;
+
+export function addGoodThing(state, text, now = Date.now()) {
+  const clean = cleanText(text);
+  const key = nightKey(now);
+  const current = state.history?.[key]?.good ?? [];
+  if (!clean || current.length >= MAX_GOOD_THINGS) return state;
+  return withDay(state, key, (day) => ({ ...day, good: [...(day.good ?? []), clean] }));
+}
+
+export function goodThingsTonight(state, now = Date.now()) {
+  return state.history?.[nightKey(now)]?.good ?? [];
 }

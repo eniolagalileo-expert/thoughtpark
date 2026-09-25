@@ -100,7 +100,7 @@ export function openCalendar({ getState }) {
   function renderDetail() {
     const night = nightDetails(getState(), selected);
     const parts = [el('h3', { className: 'cal-detail-title', textContent: `The night of ${longDate(selected)}` })];
-    if (!night.parked.length && !night.released && !night.aids.length && !night.dream) {
+    if (!night.parked.length && !night.released && !night.aids.length && !night.good.length && !night.dream) {
       parts.push(el('p', { className: 'cal-empty', textContent: 'Nothing saved for this night.' }));
     }
     if (night.parked.length) {
@@ -115,6 +115,12 @@ export function openCalendar({ getState }) {
     }
     if (night.released) {
       parts.push(el('p', { className: 'cal-released', textContent: `Let go of ${night.released} thought${night.released === 1 ? '' : 's'} that night.` }));
+    }
+    if (night.good.length) {
+      parts.push(el('div', { className: 'cal-good' }, [
+        el('p', { className: 'cal-good-label', textContent: 'Good things' }),
+        el('ul', {}, night.good.map((g) => el('li', { textContent: g }))),
+      ]));
     }
     if (night.aids.length) {
       parts.push(el('div', { className: 'cal-aids' }, [

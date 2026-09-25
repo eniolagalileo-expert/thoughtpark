@@ -3,7 +3,7 @@ import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
   setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
-  MAX_LENGTH,
+  addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
@@ -493,9 +493,49 @@ function renderGoodnight() {
     el('h1', { className: 'goodnight-title', textContent: 'All parked. Goodnight.' }),
     el('p', { className: 'goodnight-summary', textContent: summary }),
     el('p', { className: 'goodnight-note', textContent: 'Nothing left to hold onto tonight.' }),
+    goodThingsCard(),
     tools,
     more,
   ]));
+}
+
+// ---- Three good things ------------------------------------------------------
+
+function goodThingsCard() {
+  const card = el('section', { className: 'good-card', id: 'good-card' });
+  const render = () => {
+    const things = goodThingsTonight(state);
+    const list = el('ul', { className: 'good-list' }, things.map((g) => el('li', { textContent: g })));
+    const parts = [el('h2', { className: 'good-title', textContent: 'One good thing about today' })];
+    if (things.length) parts.push(list);
+    if (things.length < MAX_GOOD_THINGS) {
+      const input = el('input', {
+        id: 'good-input',
+        type: 'text',
+        maxLength: MAX_LENGTH,
+        placeholder: things.length ? 'Another one?' : 'Something small counts: a warm drink, a kind word…',
+        autocomplete: 'off',
+      });
+      const add = el('button', { type: 'submit', className: 'btn btn-quiet', textContent: 'Add' });
+      const form = el('form', { className: 'good-form' }, [
+        el('label', { htmlFor: 'good-input', className: 'sr-only', textContent: 'One good thing about today' }),
+        input,
+        add,
+      ]);
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const next = addGoodThing(state, input.value);
+        if (next === state) return;
+        commit(next);
+        render();
+        document.getElementById('good-input')?.focus();
+      });
+      parts.push(form);
+    }
+    card.replaceChildren(...parts);
+  };
+  render();
+  return card;
 }
 
 // ---- Breathing moment -----------------------------------------------------
