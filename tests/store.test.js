@@ -10,7 +10,7 @@ import {
   dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
   startSleepAid, updateSleepAid, endSleepAid, addGoodThing, goodThingsTonight, MAX_GOOD_THINGS,
   lastNightKey, rateNight, ratingStats, keyWords, wordNights, weekSummary, weekHasData,
-  recurringWorries, dismissRecurring, setRecurringPlan,
+  recurringWorries, dismissRecurring, setRecurringPlan, updateSettings, isWorryTime, DEFAULT_SETTINGS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -592,4 +592,22 @@ test('Not now hides a worry for a week, and a plan is kept', () => {
   save(storage, state);
   assert.equal(load(storage).recurring.passport.plan, 'Saturday 10 am: fill in the form');
   assert.deepEqual(parseState('{"recurring":{"BAD WORD":{},"okay":{"plan":5}}}').recurring, { okay: {} });
+});
+
+test('settings are validated and saved', () => {
+  let state = updateSettings(emptyState(), { worryHour: 14, bedtime: '23:15', remind: true });
+  assert.deepEqual(state.settings, { worryHour: 14, bedtime: '23:15', remind: true });
+  state = updateSettings(state, { worryHour: 3, bedtime: '25:00' });
+  assert.deepEqual(state.settings, { worryHour: DEFAULT_SETTINGS.worryHour, bedtime: DEFAULT_SETTINGS.bedtime, remind: true });
+  const storage = memoryStorage();
+  save(storage, updateSettings(emptyState(), { worryHour: 13 }));
+  assert.equal(load(storage).settings.worryHour, 13);
+  assert.equal(updateSettings(emptyState(), { worryHour: 18 }).settings.worryHour, DEFAULT_SETTINGS.worryHour);
+  assert.deepEqual(parseState('{}').settings, DEFAULT_SETTINGS);
+});
+
+test('worry time is the chosen hour', () => {
+  const state = updateSettings(emptyState(), { worryHour: 16 });
+  assert.equal(isWorryTime(state, at(25, 16, 20)), true);
+  assert.equal(isWorryTime(state, at(25, 17, 0)), false);
 });

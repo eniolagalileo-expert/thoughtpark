@@ -159,7 +159,7 @@ Build mode: fast (learner approved)
   Learner check: See the card after parking the same worry on three nights (seeded).
   Commit: `Notice worries that keep coming back`
 
-- [ ] **16. Worry time**
+- [x] **16. Worry time**
   Becomes usable: A 15-minute session for unfinished worries with Done / Talk / Let go / Next.
   Why now: Uses morning actions.
   PRD ref: `prd.md > More ideas (learner-approved batch)`

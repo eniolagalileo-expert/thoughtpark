@@ -131,7 +131,7 @@ PRD ref: `prd.md > Calendar`.
 - **Three good things:** `history[night].good: string[]` (max 3) via `addGoodThing`.
 - **Sleep rating:** `history[night].rating: 1–5` via `rateNight(state, key, rating)`; the morning card rates `nightKey(now − 12 h)`, i.e. last night. `weekSummary(state, endKey)` builds a text-free summary (counts, top recurring words, aids, ratings, good things, dream titles) for `weeklyInsights(summary)` in `ai.js` (structured JSON: headline, observations[], suggestion). `ratingStats` gives the local average with/without sleep tools.
 - **Recurring worries:** `recurringWorries(state, now)`: significant words (5+ letters, not in a stop list, plural "s" folded) counted per distinct night over the last 14 nights; 3+ nights qualifies. `state.recurring = { [word]: { hiddenUntil?, plan? } }`.
-- **Worry time:** a full-screen view in `js/worrytime.js` over unchecked parked thoughts; `state.settings.worryHour` (default 17).
+- **Worry time:** a full-screen view in `js/worrytime.js` over unchecked parked thoughts; `state.settings.worryHour` (default 16; 8–16 accepted so it falls in the app's daytime).
 - **Voice mode:** in `companion.js`, `SpeechRecognition` + `speechSynthesis`, one turn at a time.
 - **Install and reminder:** `manifest.webmanifest`, `icons/`, `sw.js` (cache-first for the app shell, network for the API and CDN with cache fallback), registered from `app.js`. `state.settings.bedtime` ("22:30"); `bedtimeIcs(time)` in `store.js` builds a VCALENDAR with `RRULE:FREQ=DAILY` and a `VALARM`; an in-app check each minute shows a `Notification` at bedtime once per night when permitted.
 PRD ref: `prd.md > More ideas (learner-approved batch)`.

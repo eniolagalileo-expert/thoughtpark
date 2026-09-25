@@ -4,13 +4,14 @@ import {
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
   setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
   addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, lastNightKey, rateNight, nightDetails,
-  recurringWorries, dismissRecurring, setRecurringPlan, MAX_LENGTH,
+  recurringWorries, dismissRecurring, setRecurringPlan, isWorryTime, updateSettings, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
 import { openGuide } from './guide.js';
 import { dreamSection } from './dreams.js';
 import { openCalendar } from './calendar.js';
+import { startWorryTime, stopWorryTime } from './worrytime.js';
 import { startShuffle, startSounds, startStory, stopSleepTools } from './sleep.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -123,6 +124,7 @@ function setMode(next) {
   hideStarInfo();
   recognition?.abort();
   endAid(false);
+  stopWorryTime();
   document.body.classList.remove('is-all-clear', 'is-goodnight');
   for (const flyer of document.querySelectorAll('.falling-star')) flyer.remove();
   if (mode === 'night') renderNight();
@@ -134,7 +136,10 @@ toggle.addEventListener('click', (event) => {
   if (button && button.dataset.mode !== mode) setMode(button.dataset.mode);
 });
 
-document.getElementById('open-settings').addEventListener('click', () => openSettings());
+document.getElementById('open-settings').addEventListener('click', () => openSettings({
+  getSettings: () => state.settings,
+  setSettings: (patch) => commit(updateSettings(state, patch)),
+}));
 
 function showGuide() {
   openGuide({ onClose: () => { if (!state.seenGuide) commit({ ...state, seenGuide: true }); } });
@@ -649,6 +654,16 @@ function renderMorning({ animate = true } = {}) {
     el('span', { className: 'talk-icon', textContent: '✦' }),
     'Make my morning plan',
   ]);
+  const worryNow = isWorryTime(state);
+  const worryButton = el('button', { type: 'button', className: `talk-button worry-button${worryNow ? ' is-now' : ''}`, id: 'worry-button' }, [
+    el('span', { className: 'talk-icon', textContent: '☀' }),
+    worryNow ? 'It’s your worry time · 15 min' : 'Worry time · 15 min',
+  ]);
+  worryButton.addEventListener('click', () => {
+    clearUndo();
+    startWorryTime(screen, { getState: () => state, commit, openTalk, onEnd: () => renderMorning({ animate: false }) });
+  });
+  worryButton.hidden = !items.some((t) => !t.done);
   const planCard = el('section', { className: 'plan-card', id: 'plan-card', hidden: true });
   planCard.setAttribute('aria-live', 'polite');
   planButton.addEventListener('click', () => makePlan(planButton, planCard));
@@ -660,7 +675,7 @@ function renderMorning({ animate = true } = {}) {
       className: 'screen-sub',
       textContent: 'Here’s what you parked last night. Done with one, or it doesn’t matter anymore? Check it off or let it go.',
     }),
-    planButton,
+    el('div', { className: 'morning-tools' }, [planButton, worryButton]),
     planCard,
     allClear,
     list,
@@ -844,6 +859,8 @@ function updateAllClear(celebrate) {
   document.body.classList.toggle('is-all-clear', done);
   const planButton = document.getElementById('plan-button');
   if (planButton) planButton.hidden = !items.some((t) => !t.done);
+  const worryButton = document.getElementById('worry-button');
+  if (worryButton) worryButton.hidden = !items.some((t) => !t.done);
   if (celebrate && done && wasHidden) {
     allClear.classList.remove('is-fresh');
     void allClear.offsetWidth; // restart the animation

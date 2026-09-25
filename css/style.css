@@ -730,6 +730,29 @@ body[data-theme="morning"] .check-note, body[data-theme="morning"] .card-note { 
 .dream-journal-title:empty { display: none; }
 .dream-journal-text { color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
+/* ---- Worry time ---------------------------------------------------------------- */
+.morning-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.morning-tools .talk-button { margin: 0; }
+.morning-tools .talk-button[hidden] { display: none; }
+.worry-button.is-now { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.worry-time { display: flex; flex-direction: column; gap: 12px; }
+.worry-title { margin-bottom: 0; }
+.worry-intro { margin: 0; color: var(--muted); }
+.worry-clock { margin: 0; font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #9a6a12; }
+.worry-item { padding: 18px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.worry-count { margin: 0; font-size: .8rem; color: var(--muted); }
+.worry-text { margin: 0; font-size: 1.3rem; font-weight: 600; overflow-wrap: anywhere; }
+.worry-note { margin: 0; color: #9a6a12; font-size: .9rem; }
+.worry-note::before { content: "✦ "; }
+.worry-talk { align-self: flex-start; margin: 0; }
+.worry-actions { display: flex; gap: 10px; }
+.worry-actions .btn { flex: 1; }
+.worry-next { align-self: center; color: var(--muted); }
+.worry-done { padding: 18px; border-radius: var(--radius); background: var(--surface); text-align: center; }
+.worry-done-title { margin: 0 0 6px; font-weight: 700; font-size: 1.1rem; }
+.worry-done-count { margin: 0; color: var(--muted); }
+.worry-back { align-self: flex-start; }
+
 /* ---- Worries that keep coming back ------------------------------------------------ */
 .recurring-card {
   margin: 0 0 16px;
@@ -1104,6 +1127,12 @@ body[data-theme="morning"] .talk-button { color: #8a5d0c; border-color: rgba(217
 .crisis a:not(.btn) { color: inherit; }
 
 /* Settings */
+.settings-field { display: flex; flex-direction: column; gap: 6px; }
+.settings-select, .settings-time {
+  min-height: 44px; padding: 0 12px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit;
+}
+.settings-select:focus-visible, .settings-time:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .settings-form { display: flex; flex-direction: column; gap: 8px; }
 .settings-label { font-weight: 700; }
 .settings-row { display: flex; gap: 8px; }

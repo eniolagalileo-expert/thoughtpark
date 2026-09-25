@@ -179,7 +179,7 @@ The learner asked "any other ideas like mine?", and approved all six proposals (
 **Worries that keep coming back.** When the same key word appears in parked thoughts on three or more different nights in the last 14, a card appears on both screens: "This keeps coming back: presentation (4 nights)". "✦ Make a daytime plan" opens Talk it through in daytime mode for that worry and saves the resulting note on the card; "Not now" hides it for 7 days.
   - [ ] A word parked on three nights shows the card; two nights don't; Not now hides it; the plan note shows on the card.
 
-**Worry time.** A CBT technique: a 15-minute daytime session for worries. "Worry time" on the Morning screen (and suggested at the chosen time of day, default 5 pm, set in Settings) shows unchecked parked thoughts one at a time with Done, Talk it through, Let go, and Next, and a 15-minute countdown. When time is up: "Worry time is over. The rest can wait."
+**Worry time.** A CBT technique: a 15-minute daytime session for worries. "Worry time" on the Morning screen (and suggested at the chosen time of day, default 4 pm, choosable from noon to 4 pm in Settings so it falls while the Morning screen shows) shows unchecked parked thoughts one at a time with Done, Talk it through, Let go, and Next, and a 15-minute countdown. When time is up: "Worry time is over. The rest can wait."
   - [ ] Actions update the list and calendar outcomes; the session ends at 15 minutes.
 
 **Eyes-closed voice mode.** In Talk it through, "Voice mode" dims the panel almost to black, reads each reply aloud slowly, then listens; what the person says is sent as their reply. The crisis check still runs on everything said. Hidden where speech recognition or speech synthesis is unavailable.

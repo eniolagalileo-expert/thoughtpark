@@ -196,7 +196,8 @@ export function openTalk({ thought, mode, onSave }) {
 
 // ---- Settings ---------------------------------------------------------------
 
-export function openSettings({ onChange } = {}) {
+// getSettings()/setSettings(patch) read and save the app's settings.
+export function openSettings({ onChange, getSettings, setSettings } = {}) {
   const render = () => {
     const key = getKey();
     const input = el('input', {
@@ -236,6 +237,7 @@ export function openSettings({ onChange } = {}) {
         el('a', { href: 'https://console.anthropic.com/settings/keys', target: '_blank', rel: 'noopener', textContent: 'console.anthropic.com' }),
         '. Usage costs a few cents per night.',
       ]),
+      ...(getSettings ? [worryHourField()] : []),
       el('ul', { className: 'settings-notes' }, [
         el('li', { textContent: 'Your key is stored only in this browser and sent only to Anthropic.' }),
         el('li', { textContent: 'Only thoughts you choose to talk through, speak, or plan are sent to Claude. Everything else stays on this device.' }),
@@ -243,6 +245,20 @@ export function openSettings({ onChange } = {}) {
       ]),
     );
   };
+
+  function worryHourField() {
+    const select = el('select', { id: 'worry-hour', className: 'settings-select' });
+    for (let h = 12; h <= 16; h += 1) {
+      const label = new Date(2026, 0, 1, h).toLocaleTimeString([], { hour: 'numeric' });
+      select.append(el('option', { value: String(h), textContent: label, selected: getSettings().worryHour === h }));
+    }
+    select.addEventListener('change', () => setSettings({ worryHour: Number(select.value) }));
+    return el('div', { className: 'settings-field' }, [
+      el('label', { htmlFor: 'worry-hour', className: 'settings-label', textContent: 'Worry time each day' }),
+      select,
+      el('p', { className: 'settings-small', textContent: 'At this hour the Morning screen suggests a 15-minute worry time.' }),
+    ]);
+  }
 
   function removeButton() {
     const button = el('button', { type: 'button', className: 'inline-link', textContent: 'Remove key' });

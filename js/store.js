@@ -5,7 +5,7 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [], history: {}, recurring: {} };
+  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [], history: {}, recurring: {}, settings: { ...DEFAULT_SETTINGS } };
 }
 
 // Only counts are kept about last night, never the released text.
@@ -138,6 +138,7 @@ export function parseState(raw) {
       dreams: parseDreams(data.dreams),
       history: parseHistory(data.history),
       recurring: parseRecurring(data.recurring),
+      settings: parseSettings(data.settings),
     };
   } catch {
     return emptyState();
@@ -728,4 +729,27 @@ function parseRecurring(recurring) {
     clean[word] = entry;
   }
   return clean;
+}
+
+// ---- Settings -----------------------------------------------------------------
+
+// Worry time must fall in the app's daytime (5 am – 5 pm), when the Morning screen shows.
+export const DEFAULT_SETTINGS = { worryHour: 16, bedtime: '22:30', remind: false };
+
+export function updateSettings(state, patch) {
+  return { ...state, settings: parseSettings({ ...(state.settings ?? DEFAULT_SETTINGS), ...patch }) };
+}
+
+function parseSettings(settings) {
+  const s = settings && typeof settings === 'object' ? settings : {};
+  return {
+    worryHour: Number.isInteger(s.worryHour) && s.worryHour >= 8 && s.worryHour <= 16 ? s.worryHour : DEFAULT_SETTINGS.worryHour,
+    bedtime: typeof s.bedtime === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(s.bedtime) ? s.bedtime : DEFAULT_SETTINGS.bedtime,
+    remind: Boolean(s.remind),
+  };
+}
+
+// Is it within the hour the person set aside for worry time?
+export function isWorryTime(state, now = Date.now()) {
+  return new Date(now).getHours() === (state.settings ?? DEFAULT_SETTINGS).worryHour;
 }
