@@ -433,11 +433,12 @@ function checkItemFor(thought) {
       commit(letGoParked(state, thought.id));
       offerUndo('Let go', before, 'dismissed');
       item.classList.add('is-releasing');
+      sparkle(item);
       setTimeout(() => {
         if (mode !== 'morning' || !item.isConnected) return;
         if (morningList(state).length === 0) renderMorning({ animate: false });
         else { renderMorningList(); updateAllClear(true); }
-      }, motionMs('--release-ms'));
+      }, motionMs('--morning-release-ms'));
     });
     item.append(letGo);
   }
@@ -479,6 +480,36 @@ function sunburst(id) {
   box.append(burst);
   burst.addEventListener('animationend', () => burst.remove(), { once: true });
   setTimeout(() => burst.remove(), 1500);
+}
+
+// Morning Let go: the item bursts into rainbow sparkles as it fades into light.
+function sparkle(item) {
+  if (reduceMotion.matches || typeof Element.prototype.animate !== 'function') return;
+  const r = item.getBoundingClientRect();
+  const count = 22;
+  for (let i = 0; i < count; i += 1) {
+    const spark = el('span', { className: 'sparkle' });
+    const x = r.left + r.width * (0.1 + Math.random() * 0.8);
+    const y = r.top + r.height * (0.2 + Math.random() * 0.6);
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 40 + Math.random() * 80;
+    const size = 7 + Math.random() * 8;
+    spark.style.left = `${x}px`;
+    spark.style.top = `${y}px`;
+    spark.style.width = `${size}px`;
+    spark.style.height = `${size}px`;
+    spark.style.setProperty('--hue', String(Math.round((i / count) * 360)));
+    document.body.append(spark);
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance - 30; // drift slightly upward, toward the sun
+    const burst = spark.animate([
+      { transform: 'translate(-50%, -50%) scale(0) rotate(0deg)', opacity: 0 },
+      { transform: `translate(calc(-50% + ${dx * 0.4}px), calc(-50% + ${dy * 0.4}px)) scale(1.2) rotate(90deg)`, opacity: 1, offset: 0.3 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0) rotate(200deg)`, opacity: 0 },
+    ], { duration: 900 + Math.random() * 500, delay: Math.random() * 250, easing: 'cubic-bezier(.2, .7, .3, 1)', fill: 'both' });
+    burst.onfinish = () => spark.remove();
+    burst.oncancel = () => spark.remove();
+  }
 }
 
 // At sunrise, each star falls from the sky into its checklist item.

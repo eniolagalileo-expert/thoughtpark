@@ -79,6 +79,7 @@ Build mode: fast (learner approved)
 - [x] Star info: hovering or tapping a parked star shows its thought and parked time — learner request at final review; verified on desktop (hover) and phone (tap), all slice checks re-run.
 - [x] Morning moments: stars fall into the list, check-off burst and All clear, morning Let go, last night's summary — learner request at final review; learner approved all four. Verified: 20 browser checks (normal and reduced motion), 4 new unit tests, all earlier checks re-run.
 - [x] Moon at night, sun in the morning, and a visible morning Let go animation — learner feedback ("In the morning, there should be a sun… even I click let it go, I can't see any animation. In the night, there should be a moon"). The Let go bug: the arrival animation rule overrode the release animation; fixed with a more specific selector and verified by reading the running animation name.
+- [x] Morning Let go shines: rainbow shimmer across the card plus a burst of rainbow sparkles as it fades — learner request ("it should be shine as a rainbow or spark or sun ray"); verified sparkles appear and clean up, shimmer and release animations run, reduced motion falls back to a fade.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

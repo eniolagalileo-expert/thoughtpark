@@ -5,6 +5,7 @@
   --gap: 16px;
   --ease: cubic-bezier(.22, .61, .36, 1);
   --release-ms: 1500ms;
+  --morning-release-ms: 1300ms;
   --park-ms: 450ms;
   --enter-ms: 320ms;
   font-size: 18px;
@@ -430,7 +431,42 @@ body[data-theme="morning"] .morning-summary { color: #a8761c; }
 .morning-letgo:hover { color: var(--text); background: var(--surface); }
 .morning-letgo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* Higher specificity than .is-arriving / .is-entering so Let go always animates. */
-.checklist li.morning-item.is-releasing { pointer-events: none; animation: card-release var(--release-ms) var(--ease) forwards; }
+.checklist li.morning-item.is-releasing { pointer-events: none; animation: morning-release var(--morning-release-ms) var(--ease) forwards; }
+/* In the morning, a thought you let go lights up with a rainbow shimmer and fades into light. */
+@keyframes morning-release {
+  0%   { opacity: 1; transform: none; filter: brightness(1); }
+  35%  { opacity: 1; transform: scale(1.03); filter: brightness(1.12) saturate(1.3); }
+  100% { opacity: 0; transform: scale(.94) translateY(-12px); filter: brightness(1.5) blur(3px); }
+}
+.check-item { position: relative; overflow: hidden; }
+.morning-item.is-releasing .check-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(110deg,
+    transparent 15%,
+    rgba(255, 90, 90, .45), rgba(255, 170, 60, .5), rgba(255, 230, 80, .5),
+    rgba(90, 210, 120, .45), rgba(80, 160, 255, .45), rgba(170, 110, 255, .45),
+    transparent 85%);
+  background-size: 250% 100%;
+  animation: rainbow-sweep 900ms var(--ease) forwards;
+  pointer-events: none;
+}
+@keyframes rainbow-sweep {
+  from { background-position: 120% 0; opacity: 0; }
+  30%  { opacity: 1; }
+  to   { background-position: -30% 0; opacity: .9; }
+}
+.sparkle {
+  position: fixed;
+  z-index: 6;
+  pointer-events: none;
+  background: hsl(var(--hue) 95% 62%);
+  /* A four-pointed sparkle. */
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 4px hsl(var(--hue) 100% 70%));
+}
 
 .check-box { position: relative; }
 .sunburst {
@@ -607,6 +643,9 @@ body.is-all-clear .sky-sun { opacity: 1; translate: -50% -12vh; }
   .sky-sun-disc::before { animation: none; }
   .breath-circle { transform: scale(.8); }
   .checklist li.is-arriving, .checklist li.is-arriving .check-box, .all-clear.is-fresh { animation: none; }
+  :root { --morning-release-ms: 300ms; }
+  @keyframes morning-release { to { opacity: 0; } }
+  .morning-item.is-releasing .check-item::after { animation: none; opacity: 0; }
   .sleep-overlay { animation-duration: 400ms; }
   @keyframes card-release { to { opacity: 0; } }
   @keyframes card-park { to { opacity: 0; } }

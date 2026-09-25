@@ -105,7 +105,7 @@ Added at the learner's request during final review ("add some animations and som
 - **Checking off feels good.** Ticking an item sends a short burst of sun rays from its checkbox. When every item is checked, "All clear. Have a good day." appears and the morning sun glows brighter.
   - [ ] A burst appears on check-off and disappears by itself.
   - [ ] "All clear" appears only when every listed item is checked, and disappears if one is unchecked.
-- **"Doesn't matter anymore."** Each open morning item has a quiet "Let go" button. It releases that thought (it drifts away and is not kept), with the usual 5-second Undo.
+- **"Doesn't matter anymore."** Each open morning item has a quiet "Let go" button. It releases that thought, which lights up with a rainbow shimmer and bursts into colorful sparkles as it fades (learner request), and is not kept; the usual 5-second Undo applies.
   - [ ] Let go removes the item for good after its animation; Undo brings it back.
   - [ ] Letting go of the last item shows the empty-morning message.
 - **Last night's summary.** Under "Good morning": "Last night you parked 3 thoughts and let go of 2. You slept on it." Only the two counts are saved, never the released text.

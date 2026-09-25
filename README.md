@@ -26,7 +26,7 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
 - **All parked. Goodnight.** When nothing is left, a quiet goodnight screen shows what you parked and released.
 - **One minute of breathing.** An optional guided minute (4 seconds in, 6 seconds out), then the screen dims to near-black.
 - **Morning handoff.** At sunrise each star falls from the sky into your checklist, and a line sums up your night: "Last night you parked 3 thoughts and let go of 2. You slept on it." (Only the counts are kept.)
-- **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore. When everything is done: "All clear. Have a good day." 
+- **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore, and watch it shimmer like a rainbow and burst into sparkles. When everything is done: "All clear. Have a good day." 
 - **Forgiving.** Every park or release can be undone for 5 seconds, which helps with half-asleep taps.
 - **Private by design.** No account and no server. Everything stays in your browser on your device, and released thoughts are never stored.
 - **Accessible.** Works with keyboard and screen readers, and respects your device's reduced-motion setting.
