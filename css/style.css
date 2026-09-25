@@ -1118,6 +1118,14 @@ body[data-theme="morning"] .talk-button { color: #8a5d0c; border-color: rgba(217
 @keyframes ready-pulse { 50% { box-shadow: 0 0 0 8px transparent, 0 0 18px var(--glow); } }
 .btn:disabled, .sheet textarea:disabled { opacity: .55; cursor: default; }
 
+/* Eyes-closed voice mode */
+.voice-toggle { align-self: flex-start; min-height: 36px; font-size: .85rem; }
+.voice-mode-status { margin: 0; color: var(--accent); font-size: .9rem; animation: typing 2s ease-in-out infinite; }
+.sheet.is-voice { background: #03050a; border-color: #0b0f1c; }
+.sheet.is-voice .bubble, .sheet.is-voice .talk-thought, .sheet.is-voice .compose { opacity: .28; animation: none; }
+.sheet.is-voice .sheet-title, .sheet.is-voice .talk-actions { opacity: .45; }
+.sheet.is-voice .voice-toggle { background: #0b0f1c; color: var(--accent); border-color: #1a2140; }
+
 /* Crisis card */
 .crisis { display: flex; flex-direction: column; gap: 12px; }
 .crisis-title { margin: 0; font-size: 1.3rem; }
@@ -1269,7 +1277,7 @@ body[data-theme="morning"] .talk-button { color: #8a5d0c; border-color: rgba(217
   .sky-sun-disc::before { animation: none; }
   .breath-circle { transform: scale(.8); }
   .checklist li.is-arriving, .checklist li.is-arriving .check-box, .all-clear.is-fresh { animation: none; }
-  .sheet[open], .bubble, .talk-save.is-ready, .mic-button.is-listening, .plan-card, .plan-loading, .guide-panel.is-fresh, .shuffle-item.is-fresh { animation: none; }
+  .sheet[open], .bubble, .talk-save.is-ready, .mic-button.is-listening, .plan-card, .plan-loading, .guide-panel.is-fresh, .shuffle-item.is-fresh, .voice-mode-status { animation: none; }
   :root { --morning-release-ms: 300ms; }
   @keyframes morning-release { to { opacity: 0; } }
   .morning-item.is-releasing .check-item::after { animation: none; opacity: 0; }

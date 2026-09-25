@@ -5,6 +5,8 @@ import {
 } from './ai.js';
 
 const talkDialog = document.getElementById('talk');
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const canUseVoice = () => Boolean(SpeechRecognition && window.speechSynthesis);
 const settingsDialog = document.getElementById('settings');
 
 // After this many replies, the "park it" button is highlighted.
@@ -97,6 +99,17 @@ export function openTalk({ thought, mode, onSave }) {
   const close = el('button', { type: 'button', className: 'btn btn-quiet', textContent: 'Close' });
   close.addEventListener('click', () => talkDialog.close());
 
+  // Eyes-closed voice mode: replies are read aloud, then the app listens.
+  let voiceOn = false;
+  let recognition = null;
+  let quietTries = 0;
+  const voiceStatus = el('p', { className: 'voice-mode-status', hidden: true });
+  voiceStatus.setAttribute('role', 'status');
+  const voiceToggle = el('button', { type: 'button', className: 'chip voice-toggle', textContent: '🎧 Voice mode' });
+  voiceToggle.setAttribute('aria-pressed', 'false');
+  voiceToggle.hidden = !canUseVoice();
+  voiceToggle.addEventListener('click', () => setVoice(!voiceOn));
+
   talkDialog.replaceChildren(
     el('header', { className: 'sheet-header' }, [
       el('h2', { id: 'talk-title', className: 'sheet-title', textContent: mode === 'daytime' ? 'Make a daytime plan' : 'Talk it through' }),
@@ -104,11 +117,13 @@ export function openTalk({ thought, mode, onSave }) {
     ]),
     el('blockquote', { className: 'talk-thought', textContent: thought.label ?? thought.text }),
     ...(isDemo() ? [demoBanner()] : []),
+    voiceToggle,
     messages,
+    voiceStatus,
     form,
     el('div', { className: 'talk-actions' }, [close, save]),
   );
-  talkDialog.addEventListener('close', () => { closed = true; }, { once: true });
+  talkDialog.addEventListener('close', () => { closed = true; stopVoice(); }, { once: true });
   talkDialog.showModal();
 
   function bubble(role, text = '') {
@@ -146,6 +161,7 @@ export function openTalk({ thought, mode, onSave }) {
       item.textContent = text;
       history.push({ role: 'assistant', content: text });
       if (history.filter((m) => m.role === 'assistant').length >= WRAP_UP_AFTER) save.classList.add('is-ready');
+      if (voiceOn && !closed) speakThenListen(text);
     } catch (error) {
       item.remove();
       bubble('error', friendlyError(error));
@@ -154,11 +170,10 @@ export function openTalk({ thought, mode, onSave }) {
     }
   }
 
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const text = input.value.trim();
+  function sendReply(text) {
     if (!text || busy) return;
     if (crisisCheck(text)) {
+      stopVoice();
       showCrisis();
       return;
     }
@@ -166,7 +181,61 @@ export function openTalk({ thought, mode, onSave }) {
     bubble('user', text);
     history.push({ role: 'user', content: text });
     reply();
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    sendReply(input.value.trim());
   });
+
+  function setVoice(on) {
+    voiceOn = on && canUseVoice();
+    voiceToggle.setAttribute('aria-pressed', String(voiceOn));
+    voiceToggle.textContent = voiceOn ? '🎧 Voice mode on' : '🎧 Voice mode';
+    talkDialog.classList.toggle('is-voice', voiceOn);
+    voiceStatus.hidden = !voiceOn;
+    if (!voiceOn) { stopVoice(); return; }
+    quietTries = 0;
+    const last = [...history].reverse().find((m) => m.role === 'assistant');
+    if (!busy) (last ? speakThenListen(last.content) : listen());
+  }
+
+  function stopVoice() {
+    window.speechSynthesis?.cancel();
+    recognition?.abort();
+    recognition = null;
+  }
+
+  function speakThenListen(text) {
+    voiceStatus.textContent = 'Speaking…';
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.85;
+    utterance.pitch = 0.9;
+    utterance.onend = () => { if (voiceOn && !closed) listen(); };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function listen() {
+    if (!voiceOn || closed || busy) return;
+    voiceStatus.textContent = 'Listening… say your reply.';
+    let heard = '';
+    recognition = new SpeechRecognition();
+    recognition.lang = navigator.language || 'en-US';
+    recognition.interimResults = false;
+    recognition.onresult = (event) => {
+      heard = [...event.results].map((r) => r[0].transcript).join(' ').trim();
+    };
+    recognition.onend = () => {
+      recognition = null;
+      if (!voiceOn || closed) return;
+      if (heard) { quietTries = 0; voiceStatus.textContent = 'Thinking…'; sendReply(heard); return; }
+      quietTries += 1;
+      if (quietTries < 3) listen();
+      else { setVoice(false); voiceToggle.textContent = '🎧 Voice mode (paused: didn’t hear anything)'; }
+    };
+    recognition.start();
+  }
   input.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
       event.preventDefault();

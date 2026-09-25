@@ -169,7 +169,7 @@ Build mode: fast (learner approved)
   Learner check: Start Worry time from the Morning screen.
   Commit: `Add worry time`
 
-- [ ] **17. Eyes-closed voice mode**
+- [x] **17. Eyes-closed voice mode**
   Becomes usable: Voice mode inside Talk it through.
   Why now: Extends the chat.
   PRD ref: `prd.md > More ideas (learner-approved batch)`
