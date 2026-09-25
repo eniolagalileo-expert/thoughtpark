@@ -234,6 +234,37 @@ export async function analyzeDream({ dream, thoughts }) {
   });
 }
 
+// ---- Weekly insights ----------------------------------------------------------
+
+const INSIGHTS_SCHEMA = {
+  type: 'object',
+  properties: {
+    headline: { type: 'string' },
+    observations: { type: 'array', items: { type: 'string' } },
+    suggestion: { type: 'string' },
+  },
+  required: ['headline', 'observations', 'suggestion'],
+  additionalProperties: false,
+};
+
+const INSIGHTS_SYSTEM = `You look at one week of someone's ThoughtPark nights and share gentle, honest insights about their sleep and bedtime thoughts. You get counts, recurring key words, the sleep tools they used and whether each ran to the end (often a sign they fell asleep), their 1–5 sleep ratings, their "good things", and dream titles.
+
+Return:
+- headline: one warm sentence summing up the week.
+- observations: two to four short, specific observations grounded only in the data (patterns across weekdays, which tools seemed to help, recurring worry words, ratings). Say "seems" or "might" when the data is thin. Never invent data.
+- suggestion: one small, practical thing to try next week.
+
+No medical claims or diagnoses. Plain, kind language; no lists inside strings.`;
+
+export async function weeklyInsights(summary) {
+  if (isDemo()) return demoInsights(summary);
+  return structured({
+    system: INSIGHTS_SYSTEM,
+    content: `My week:\n${JSON.stringify(summary, null, 1)}`,
+    schema: INSIGHTS_SCHEMA,
+  });
+}
+
 // ---- Sleep story --------------------------------------------------------------
 
 const STORY_SYSTEM = `You write sleep stories: slow, gentle, deliberately uneventful stories that help a listener drift off. Second person ("you"), present tense, about 350 words. Nothing happens that could create suspense, surprise, conflict, or strong emotion. Linger on soft sensory details: warm light, quiet sounds, textures, slow breathing, repetition. Sentences get a little shorter and slower toward the end, which fades into rest. Plain text only, no title, no headings.`;
@@ -319,6 +350,20 @@ function demoDream(dream, thoughts) {
     reflection: 'This is a sample reflection. Dreams often stitch together bits of recent days, and the feeling you woke up with is usually the most useful clue.',
     connection: echo ? `It may echo a thought you parked last night: “${echo.text}”.` : '',
     question: 'What feeling from the dream is still with you this morning?',
+  };
+}
+
+function demoInsights(summary) {
+  const nights = summary.nights.filter((n) => n.parked || n.letGoAtNight || n.sleepTools.length);
+  const parked = summary.nights.reduce((a, n) => a + n.parked, 0);
+  const word = summary.recurringWords[0];
+  return {
+    headline: 'This is a sample: a week of showing up for yourself at bedtime.',
+    observations: [
+      `You used ThoughtPark on ${nights.length} of the last 7 nights and parked ${parked} thought${parked === 1 ? '' : 's'}.`,
+      word ? `“${word.word}” came up on ${word.nights} nights, so it may be worth some daytime attention.` : 'No single worry kept coming back this week.',
+    ],
+    suggestion: 'Try one sleep tool on the nights your mind feels busiest, and rate your sleep the next morning.',
   };
 }
 

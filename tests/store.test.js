@@ -9,6 +9,7 @@ import {
   addDream, updateDream, deleteDream, setDreamReflection, dreamForDay, cleanDream, MAX_DREAMS,
   dayKey, nightKey, dreamNightKey, withHistoryBackfill, nightDetails, monthMarks, MAX_HISTORY_DAYS,
   startSleepAid, updateSleepAid, endSleepAid, addGoodThing, goodThingsTonight, MAX_GOOD_THINGS,
+  lastNightKey, rateNight, ratingStats, keyWords, wordNights, weekSummary, weekHasData,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -490,4 +491,58 @@ test('up to three good things are kept on tonight', () => {
   const storage = memoryStorage();
   save(storage, state);
   assert.deepEqual(load(storage).history['2026-09-24'].good, ['Coffee with Sam', 'a long walk', 'Finished the draft']);
+});
+
+// ---- Sleep rating and weekly insights ------------------------------------------
+
+test('last night in the morning is the night before', () => {
+  assert.equal(lastNightKey(at(25, 7)), '2026-09-24');
+  assert.equal(lastNightKey(at(25, 15)), '2026-09-24');
+  assert.equal(lastNightKey(at(25, 23)), '2026-09-25');
+});
+
+test('a night can be rated 1 to 5 and re-rated', () => {
+  let state = rateNight(emptyState(), '2026-09-24', 4);
+  state = rateNight(state, '2026-09-24', 5);
+  assert.equal(nightDetails(state, '2026-09-24').rating, 5);
+  assert.equal(rateNight(state, '2026-09-24', 9), state);
+  const storage = memoryStorage();
+  save(storage, state);
+  assert.equal(load(storage).history['2026-09-24'].rating, 5);
+});
+
+test('rating stats compare nights with and without sleep tools', () => {
+  let state = emptyState();
+  for (const [day, rating, tool] of [[20, 4, 'shuffle'], [21, 5, 'sounds'], [22, 2, null], [23, 3, null], [24, 3, null]]) {
+    if (tool) state = startSleepAid(state, tool, '', at(day, 23)).state;
+    state = rateNight(state, `2026-09-${day}`, rating);
+  }
+  assert.deepEqual(ratingStats(state), { with: { n: 2, avg: 4.5 }, without: { n: 3, avg: 2.7 } });
+});
+
+test('keyWords keeps meaningful words only', () => {
+  assert.deepEqual(keyWords('What if the presentation goes badly?'), ['presentation', 'badly']);
+  assert.deepEqual(keyWords("I keep thinking about Sam's messages"), ['message']);
+  assert.deepEqual(keyWords('Pay bills tomorrow'), ['bill']);
+  assert.deepEqual(keyWords('Pay the electric bill'), ['electric']);
+  assert.deepEqual(keyWords(''), []);
+});
+
+test('weekSummary counts the week without thought text', () => {
+  let { state, ids } = nightOf24();
+  state = toggleDone(state, ids.passport);
+  state = rateNight(state, '2026-09-24', 4);
+  state = addGoodThing(state, 'Coffee with Sam', at(24, 22));
+  let added = addThought(state, 'Passport photo', at(22, 22));
+  state = parkThought(added.state, added.thought.id, at(22, 22)).state;
+  const summary = weekSummary(state, '2026-09-24');
+  assert.equal(summary.nights.length, 7);
+  const night24 = summary.nights[6];
+  assert.deepEqual([night24.night, night24.weekday, night24.parked, night24.letGoAtNight, night24.doneNextDay, night24.sleepRating], ['2026-09-24', 'Thursday', 3, 1, 1, 4]);
+  assert.deepEqual(night24.goodThings, ['Coffee with Sam']);
+  assert.deepEqual(summary.recurringWords, [{ word: 'passport', nights: 2 }]);
+  assert.equal(JSON.stringify(summary).includes('Reply to Jordan'), false);
+  assert.equal(weekHasData(summary), true);
+  assert.equal(weekHasData(weekSummary(emptyState(), '2026-09-24')), false);
+  assert.deepEqual(wordNights(state, '2026-09-24', 7)[0], { word: 'passport', nights: 2 });
 });

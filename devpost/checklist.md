@@ -139,7 +139,7 @@ Build mode: fast (learner approved)
   Learner check: Park a thought, then note one good thing.
   Commit: `Add three good things`
 
-- [ ] **14. Sleep rating and weekly insights**
+- [x] **14. Sleep rating and weekly insights**
   Becomes usable: Rate last night in the morning; the calendar shows ratings and "This week's insights" from Claude.
   Why now: Builds on the calendar history.
   PRD ref: `prd.md > More ideas (learner-approved batch)`

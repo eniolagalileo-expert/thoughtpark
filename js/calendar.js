@@ -1,6 +1,7 @@
 // "Your calendar": a month of nights. Each night shows what was parked, what
 // became of it, how many thoughts were let go, and the dream noted after it.
-import { monthMarks, nightDetails, nightKey, SLEEP_AIDS } from './store.js';
+import { monthMarks, nightDetails, nightKey, SLEEP_AIDS, weekSummary, weekHasData, ratingStats } from './store.js';
+import { weeklyInsights, friendlyError, isDemo } from './ai.js';
 
 const dialog = document.getElementById('calendar');
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -60,8 +61,50 @@ export function openCalendar({ getState }) {
       el('span', { className: 'cal-moon', textContent: '☾' }), ' dream',
     ]),
     detail,
+    insightsSection(),
     el('p', { className: 'cal-privacy', textContent: 'Saved only on this device. Thoughts you let go at night are never stored, only counted.' }),
   );
+
+  function insightsSection() {
+    const button = el('button', { type: 'button', className: 'talk-button cal-insights-button', id: 'insights-button' }, [
+      el('span', { className: 'talk-icon', textContent: '✦' }), 'This week’s insights',
+    ]);
+    const card = el('div', { className: 'cal-insights', id: 'cal-insights', hidden: true });
+    card.setAttribute('aria-live', 'polite');
+    const stats = ratingStats(getState());
+    const local = stats.with.n >= 2 && stats.without.n >= 2
+      ? [el('p', { className: 'cal-stat', textContent: `Average sleep rating: ${stats.with.avg} on nights with a sleep tool, ${stats.without.avg} without.` })]
+      : [];
+    button.addEventListener('click', async () => {
+      const summary = weekSummary(getState(), tonight);
+      card.hidden = false;
+      if (!weekHasData(summary)) {
+        card.replaceChildren(el('p', { className: 'cal-empty', textContent: 'Nothing saved in the last 7 nights yet. Park some thoughts and rate your sleep, then check back.' }));
+        return;
+      }
+      button.disabled = true;
+      card.replaceChildren(el('p', { className: 'plan-loading', textContent: 'Looking at your week…' }));
+      try {
+        const insight = await weeklyInsights(summary);
+        card.replaceChildren(
+          el('h3', { className: 'cal-insights-title', textContent: insight.headline }),
+          el('ul', { className: 'cal-insights-list' }, insight.observations.map((o) => el('li', { textContent: o }))),
+          el('p', { className: 'cal-suggestion', textContent: insight.suggestion }),
+          ...(isDemo() ? [el('p', { className: 'plan-demo', textContent: 'Demo insights. Add your API key in Settings for insights from Claude.' })] : []),
+        );
+      } catch (error) {
+        card.replaceChildren(el('p', { className: 'plan-error', textContent: friendlyError(error) }));
+      } finally {
+        button.disabled = false;
+      }
+    });
+    return el('section', { className: 'cal-insights-section' }, [
+      button,
+      ...local,
+      card,
+      el('p', { className: 'cal-privacy', textContent: 'Insights send Claude a summary of the last 7 nights: counts, repeated key words, sleep tools, ratings, good things, and dream titles. Not your thoughts themselves.' }),
+    ]);
+  }
 
   function renderMonth() {
     title.textContent = new Date(year, month, 1).toLocaleDateString([], { month: 'long', year: 'numeric' });
@@ -100,7 +143,10 @@ export function openCalendar({ getState }) {
   function renderDetail() {
     const night = nightDetails(getState(), selected);
     const parts = [el('h3', { className: 'cal-detail-title', textContent: `The night of ${longDate(selected)}` })];
-    if (!night.parked.length && !night.released && !night.aids.length && !night.good.length && !night.dream) {
+    if (night.rating) {
+      parts.push(el('p', { className: 'cal-rating', textContent: `Slept: ${'☾'.repeat(night.rating)}${'·'.repeat(5 - night.rating)} ${night.rating} of 5` }));
+    }
+    if (!night.parked.length && !night.released && !night.aids.length && !night.good.length && !night.dream && !night.rating) {
       parts.push(el('p', { className: 'cal-empty', textContent: 'Nothing saved for this night.' }));
     }
     if (night.parked.length) {

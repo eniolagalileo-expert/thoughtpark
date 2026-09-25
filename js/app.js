@@ -3,7 +3,7 @@ import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
   setNote, crisisCheck, splitLocally, withHistoryBackfill, startSleepAid, updateSleepAid, endSleepAid,
-  addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, MAX_LENGTH,
+  addGoodThing, goodThingsTonight, MAX_GOOD_THINGS, lastNightKey, rateNight, nightDetails, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
@@ -618,6 +618,7 @@ function renderMorning({ animate = true } = {}) {
   if (summaryText) {
     header.push(el('p', { className: 'morning-summary', id: 'morning-summary', textContent: summaryText }));
   }
+  header.push(ratingCard());
   header.push(dreamSection({
     getState: () => state,
     commit,
@@ -728,6 +729,35 @@ function renderMorningList() {
   const focusedId = document.activeElement?.closest('li')?.dataset.id;
   list.replaceChildren(...morningList(state).map(checkItemFor));
   if (focusedId) list.querySelector(`li[data-id="${focusedId}"] .check-item`)?.focus();
+}
+
+// ---- Sleep rating -------------------------------------------------------------
+
+const RATING_WORDS = ['', 'Rough', 'Restless', 'Okay', 'Good', 'Great'];
+
+function ratingCard() {
+  const card = el('section', { className: 'rating-card', id: 'rating-card' });
+  const render = () => {
+    const key = lastNightKey();
+    const rating = nightDetails(state, key).rating;
+    const moons = [1, 2, 3, 4, 5].map((n) => {
+      const button = el('button', { type: 'button', className: 'rating-moon', textContent: '☾' });
+      button.dataset.rating = String(n);
+      button.setAttribute('aria-label', `${n} of 5: ${RATING_WORDS[n]}`);
+      button.setAttribute('aria-pressed', String(rating === n));
+      if (rating && n <= rating) button.classList.add('is-lit');
+      button.addEventListener('click', () => { commit(rateNight(state, key, n)); render(); });
+      return button;
+    });
+    card.replaceChildren(
+      el('h2', { className: 'rating-title', textContent: 'How did you sleep?' }),
+      el('div', { className: 'rating-moons', role: 'group' }, moons),
+      el('p', { className: 'rating-note', textContent: rating ? `${RATING_WORDS[rating]} (${rating} of 5). Saved to last night.` : 'Tap a moon. It goes in your calendar.' }),
+    );
+    card.querySelector('.rating-moons').setAttribute('aria-label', 'Rate last night’s sleep');
+  };
+  render();
+  return card;
 }
 
 // ---- Morning plan -----------------------------------------------------------

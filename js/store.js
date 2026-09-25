@@ -585,3 +585,92 @@ export function addGoodThing(state, text, now = Date.now()) {
 export function goodThingsTonight(state, now = Date.now()) {
   return state.history?.[nightKey(now)]?.good ?? [];
 }
+
+// ---- Sleep rating ---------------------------------------------------------------
+
+// In the morning, "last night" is the night that started before now.
+export function lastNightKey(now = Date.now()) {
+  return nightKey(now - 12 * 3600e3);
+}
+
+export function rateNight(state, key, rating) {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return state;
+  return withDay(state, key, (day) => ({ ...day, rating }));
+}
+
+// Average rating on nights with and without a sleep tool.
+export function ratingStats(state) {
+  const groups = { with: [], without: [] };
+  for (const day of Object.values(state.history ?? {})) {
+    if (!day.rating) continue;
+    groups[(day.aids ?? []).length ? 'with' : 'without'].push(day.rating);
+  }
+  const summary = (list) => ({ n: list.length, avg: list.length ? Math.round((list.reduce((a, b) => a + b, 0) / list.length) * 10) / 10 : null });
+  return { with: summary(groups.with), without: summary(groups.without) };
+}
+
+// ---- Key words (for insights and recurring worries) -----------------------------
+
+const STOP_WORDS = new Set(('about above after again against along already always another anything around because '
+  + 'before being below between both could didnt doesnt doing done dont during each either enough every everything '
+  + 'first from getting going gonna gotta have having here itself just keep kind know later maybe might more most '
+  + 'much must myself need needs never next nothing other really right same should since some something still such '
+  + 'than that thats their them then there these they thing things think this those though through tomorrow tonight '
+  + 'today tried trying under until very want wants wanted wasnt were what whats when where which while whole will '
+  + 'with without wont would yesterday your yours abouts forget remember make sure feel feels felt worried worry '
+  + 'worrying thinking thought thoughts').split(' '));
+
+// Significant words: 5+ letters, not a stop word, simple plural folded.
+export function keyWords(text) {
+  const words = String(text ?? '').toLowerCase().replace(/[’']/g, '').match(/[a-z]{5,}/g) ?? [];
+  return [...new Set(words.map((w) => (w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w))
+    .filter((w) => !STOP_WORDS.has(w)))];
+}
+
+function shiftKey(key, days) {
+  const [y, m, d] = key.split('-').map(Number);
+  return dayKey(new Date(y, m - 1, d + days, 12).getTime());
+}
+
+// Words that appear in parked thoughts on at least `minNights` of the
+// `nights` nights ending with `endKey`, most frequent first.
+export function wordNights(state, endKey, nights = 7) {
+  const counts = new Map();
+  for (let i = 0; i < nights; i += 1) {
+    const day = state.history?.[shiftKey(endKey, -i)];
+    if (!day) continue;
+    const words = new Set(day.parked.flatMap((t) => keyWords(t.text)));
+    for (const w of words) counts.set(w, (counts.get(w) ?? 0) + 1);
+  }
+  return [...counts.entries()].map(([word, n]) => ({ word, nights: n })).sort((a, b) => b.nights - a.nights || a.word.localeCompare(b.word));
+}
+
+// ---- Weekly insights ------------------------------------------------------------
+
+// A summary of the seven nights ending with `endKey`, for Claude. It holds
+// counts, key words, and the person's own good things, never thought text.
+export function weekSummary(state, endKey) {
+  const nights = [];
+  for (let i = 6; i >= 0; i -= 1) {
+    const key = shiftKey(endKey, -i);
+    const night = nightDetails(state, key);
+    const [y, m, d] = key.split('-').map(Number);
+    nights.push({
+      night: key,
+      weekday: new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }),
+      parked: night.parked.length,
+      letGoAtNight: night.released,
+      doneNextDay: night.parked.filter((t) => t.outcome === 'done').length,
+      letGoNextDay: night.parked.filter((t) => t.outcome === 'let-go').length,
+      sleepTools: night.aids.map((a) => ({ tool: SLEEP_AIDS[a.tool], ranToEnd: a.finished === true })),
+      sleepRating: night.rating,
+      goodThings: night.good,
+      dream: night.dream?.reflection?.title ?? (night.dream ? 'noted, not reflected on' : null),
+    });
+  }
+  return { nights, recurringWords: wordNights(state, endKey, 7).filter((w) => w.nights >= 2).slice(0, 6) };
+}
+
+export function weekHasData(summary) {
+  return summary.nights.some((n) => n.parked || n.letGoAtNight || n.sleepTools.length || n.sleepRating || n.goodThings.length || n.dream);
+}
