@@ -1,7 +1,7 @@
 // Screens and event handling for ThoughtPark.
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
-  load, save, promptAt, MAX_LENGTH,
+  load, save, promptAt, breathPhase, MAX_LENGTH,
 } from './store.js';
 import { renderSky, shootingStar } from './sky.js';
 
@@ -33,6 +33,8 @@ let undoTimer = null;
 
 let promptTimer = null;
 let promptIndex = 0;
+
+let breathingFrame = null;
 
 function commit(next) {
   state = next;
@@ -85,6 +87,7 @@ function setMode(next) {
   }
   clearUndo();
   stopPrompts();
+  stopBreathing();
   if (mode === 'night') renderNight();
   else renderMorning();
 }
@@ -268,11 +271,14 @@ function updateCounter(bump) {
 
 function renderGoodnight() {
   stopPrompts();
+  stopBreathing();
   const summary = [
     session.parked ? `${plural(session.parked, 'thought')} parked` : null,
     session.released ? `${session.released} let go` : null,
   ].filter(Boolean).join(', ');
 
+  const breathe = el('button', { type: 'button', className: 'btn btn-primary breathe-start', textContent: 'Breathe for a minute' });
+  breathe.addEventListener('click', renderBreathing);
   const more = el('button', { type: 'button', className: 'link-button', textContent: 'Add another thought' });
   more.addEventListener('click', () => renderNight({ keepSession: true }));
 
@@ -280,8 +286,68 @@ function renderGoodnight() {
     el('h1', { className: 'goodnight-title', textContent: 'All parked. Goodnight.' }),
     el('p', { className: 'goodnight-summary', textContent: summary }),
     el('p', { className: 'goodnight-note', textContent: 'Nothing left to hold onto tonight.' }),
+    breathe,
     more,
   ]));
+}
+
+// ---- Breathing moment -----------------------------------------------------
+
+const ease = (t) => 0.5 - Math.cos(Math.PI * t) / 2;
+
+function renderBreathing() {
+  clearUndo();
+  const circle = el('div', { className: 'breath-circle' });
+  const label = el('p', { className: 'breath-label', textContent: 'Breathe in' });
+  const remaining = el('p', { className: 'breath-remaining' });
+  const stop = el('button', { type: 'button', className: 'link-button', textContent: 'Stop' });
+  stop.addEventListener('click', renderGoodnight);
+
+  screen.replaceChildren(el('section', { className: 'breathing' }, [
+    el('div', { className: 'breath-stage' }, circle),
+    label,
+    remaining,
+    stop,
+  ]));
+
+  const start = performance.now();
+  let lastPhase = null;
+  const tick = (now) => {
+    const breath = breathPhase(now - start);
+    if (breath.done) {
+      breathingFrame = null;
+      renderSleep();
+      return;
+    }
+    if (breath.phase !== lastPhase) {
+      label.textContent = breath.phase === 'in' ? 'Breathe in' : 'Breathe out';
+      lastPhase = breath.phase;
+    }
+    remaining.textContent = `${breath.remainingSec}s`;
+    if (!reduceMotion.matches) {
+      const grow = breath.phase === 'in' ? ease(breath.progress) : 1 - ease(breath.progress);
+      circle.style.transform = `scale(${(0.55 + 0.45 * grow).toFixed(3)})`;
+    }
+    breathingFrame = requestAnimationFrame(tick);
+  };
+  breathingFrame = requestAnimationFrame(tick);
+}
+
+function stopBreathing() {
+  if (breathingFrame) cancelAnimationFrame(breathingFrame);
+  breathingFrame = null;
+  document.getElementById('sleep')?.remove();
+}
+
+// After the minute: the screen dims almost to black.
+function renderSleep() {
+  const overlay = el('button', { type: 'button', className: 'sleep-overlay', id: 'sleep' }, [
+    el('span', { textContent: 'Goodnight' }),
+  ]);
+  overlay.setAttribute('aria-label', 'Goodnight. Tap to return.');
+  overlay.addEventListener('click', renderGoodnight);
+  document.body.append(overlay);
+  overlay.focus();
 }
 
 // ---- Morning screen -------------------------------------------------------

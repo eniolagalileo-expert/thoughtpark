@@ -157,3 +157,28 @@ export function promptAt(n) {
   const len = PROMPTS.length;
   return PROMPTS[((n % len) + len) % len];
 }
+
+// ---- Breathing moment -----------------------------------------------------
+
+export const BREATH_IN_MS = 4000;
+export const BREATH_OUT_MS = 6000;
+export const BREATH_TOTAL_MS = 60000;
+
+// Where we are in the minute: breathing in or out, which of the six breaths,
+// how far through the current phase (0–1), and the seconds left.
+export function breathPhase(elapsedMs) {
+  const cycleMs = BREATH_IN_MS + BREATH_OUT_MS;
+  const elapsed = Math.max(0, elapsedMs);
+  if (elapsed >= BREATH_TOTAL_MS) {
+    return { done: true, phase: 'out', cycle: BREATH_TOTAL_MS / cycleMs, progress: 1, remainingSec: 0 };
+  }
+  const inCycle = elapsed % cycleMs;
+  const breathingIn = inCycle < BREATH_IN_MS;
+  return {
+    done: false,
+    phase: breathingIn ? 'in' : 'out',
+    cycle: Math.floor(elapsed / cycleMs) + 1,
+    progress: breathingIn ? inCycle / BREATH_IN_MS : (inCycle - BREATH_IN_MS) / BREATH_OUT_MS,
+    remainingSec: Math.ceil((BREATH_TOTAL_MS - elapsed) / 1000),
+  };
+}

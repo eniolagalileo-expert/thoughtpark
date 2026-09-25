@@ -360,6 +360,44 @@ body[data-theme="morning"] .sky-stars { opacity: 0; }
 .goodnight-note { margin: 8px 0 0; color: var(--muted); }
 .goodnight .link-button { align-self: center; }
 
+/* Breathing moment */
+.goodnight .breathe-start { align-self: center; margin-top: 28px; padding: 0 24px; }
+.breathing {
+  min-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.breath-stage { width: 240px; height: 240px; display: grid; place-items: center; }
+.breath-circle {
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(242, 207, 122, .35), rgba(242, 207, 122, .08) 70%);
+  box-shadow: 0 0 60px rgba(242, 207, 122, .15);
+  border: 1px solid rgba(242, 207, 122, .35);
+  transform: scale(.55);
+  will-change: transform;
+}
+.breath-label { font-size: 1.5rem; font-weight: 700; margin: 28px 0 4px; }
+.breath-remaining { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.sleep-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  border: 0;
+  background: #04060c;
+  color: #3a4055;
+  font-size: 1.1rem;
+  cursor: pointer;
+  animation: dim 2500ms var(--ease) both;
+}
+.sleep-overlay:focus-visible { outline: none; }
+@keyframes dim { from { opacity: 0; } to { opacity: 1; } }
+
 /* Undo toast */
 .toast-area {
   position: fixed;
@@ -404,6 +442,8 @@ body[data-theme="morning"] .sky-stars { opacity: 0; }
   .sky-shooting { animation: shoot-fade 600ms linear forwards; transform: rotate(-25deg); }
   @keyframes shoot-fade { from { opacity: .8; } to { opacity: 0; } }
   .sky-sun, .sky-decor, .sky-stars { transition-duration: 1ms; }
+  .breath-circle { transform: scale(.8); }
+  .sleep-overlay { animation-duration: 400ms; }
   @keyframes card-release { to { opacity: 0; } }
   @keyframes card-park { to { opacity: 0; } }
   .parked-count.bump { animation: none; }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
-  starPosition, hashString, promptAt, PROMPTS,
+  starPosition, hashString, promptAt, PROMPTS, breathPhase,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -168,4 +168,28 @@ test('promptAt cycles through the prompt list', () => {
   assert.equal(promptAt(PROMPTS.length), PROMPTS[0]);
   assert.equal(promptAt(PROMPTS.length + 2), PROMPTS[2]);
   assert.equal(promptAt(-1), PROMPTS[PROMPTS.length - 1]);
+});
+
+// ---- Slice 5: breathing moment -------------------------------------------
+
+test('breathPhase follows 4 s in, 6 s out, six times', () => {
+  const at = (s) => breathPhase(s * 1000);
+  assert.deepEqual([at(0).phase, at(0).cycle, at(0).done], ['in', 1, false]);
+  assert.equal(at(0).remainingSec, 60);
+  assert.equal(at(3.9).phase, 'in');
+  assert.equal(at(4).phase, 'out');
+  assert.equal(at(9.9).phase, 'out');
+  assert.deepEqual([at(10).phase, at(10).cycle], ['in', 2]);
+  assert.deepEqual([at(59.9).phase, at(59.9).cycle, at(59.9).done], ['out', 6, false]);
+  assert.equal(at(59.9).remainingSec, 1);
+  assert.equal(at(60).done, true);
+  assert.equal(at(75).done, true);
+});
+
+test('breathPhase progress runs from 0 to 1 within each phase', () => {
+  assert.equal(breathPhase(0).progress, 0);
+  assert.equal(breathPhase(2000).progress, 0.5);
+  assert.equal(breathPhase(4000).progress, 0);
+  assert.equal(breathPhase(7000).progress, 0.5);
+  assert.equal(breathPhase(-50).progress, 0);
 });

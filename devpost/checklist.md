@@ -49,7 +49,7 @@ Build mode: fast (learner approved)
   Learner check: Park a few thoughts and watch stars appear; let one go and watch the shooting star; then wait without typing and read the prompt.
   Commit: `Add night sky stars and gentle prompts`
 
-- [ ] **5. One minute of breathing before sleep**
+- [x] **5. One minute of breathing before sleep**
   Becomes usable: From the Goodnight screen, "Breathe for a minute" runs a 60-second breathe-in/breathe-out circle, then dims to a near-black "Goodnight."
   Why now: Completes the night journey after Goodnight exists (slice 3); independent of the sky.
   PRD ref: `prd.md > Breathing moment`, `prd.md > The Core Journey` (step 6a)
