@@ -1,12 +1,15 @@
-// The night sky behind the screens: faint decorative stars, one bright star
-// per parked thought, shooting stars for released thoughts, and a sunrise.
+// The night sky behind the screens: faint decorative stars, the moon, one
+// bright star per parked thought, shooting stars for released thoughts, and
+// the sun that rises in the morning.
 import { starPosition } from './store.js';
 
 const sky = document.getElementById('sky');
 const decor = el('div', 'sky-decor');
 const stars = el('div', 'sky-stars');
 const sun = el('div', 'sky-sun');
-sky.append(decor, sun, stars);
+const sunDisc = el('div', 'sky-sun-disc');
+const moon = el('div', 'sky-moon');
+sky.append(decor, sun, sunDisc, moon, stars);
 
 function el(tag, className) {
   const node = document.createElement(tag);

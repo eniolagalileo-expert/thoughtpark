@@ -20,6 +20,7 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
 ## What it does
 
 - **Park or let go.** Each thought becomes a card. "Let it go" makes it blur and drift away, and it's never saved. "Tomorrow" parks it.
+- **Moon and sun.** A crescent moon watches over the night; in the morning it sets and the sun rises in its place.
 - **Your thoughts become stars.** Every parked thought appears as a star in the night sky behind the app, always in the same place. Hover over a star (or tap it on a phone) to see which thought it is and when you parked it. Letting a thought go sends a shooting star across the sky.
 - **Gentle prompts.** If you stop typing, soft questions appear ("Someone you need to reply to?") to help you empty your mind completely.
 - **All parked. Goodnight.** When nothing is left, a quiet goodnight screen shows what you parked and released.

@@ -67,6 +67,7 @@ Added after the first checkpoint at the learner's request (Innovation, Design).
   - [ ] Undo restores the sky to match (the star returns or disappears).
   - [ ] Hovering a star with the mouse (or tapping it on a phone) shows that thought's text and when it was parked; moving away or tapping elsewhere hides it. (Added at the learner's request during final review.)
   - [ ] Switching to Morning plays a short sunrise: the sky warms and the stars fade as the checklist appears.
+  - [ ] A crescent moon is visible in the night sky; in the morning the moon sets and a sun with slowly turning rays rises in its place, without covering any text. (Added at the learner's request during final review.)
   - [ ] With reduced motion, stars appear and disappear without movement.
 
 ### Gentle prompts

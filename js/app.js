@@ -505,7 +505,7 @@ function arriveFromSky(list) {
       { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
       { transform: `translate(calc(-50% + ${dx * 0.35}px), calc(-50% + ${dy * 0.6}px)) scale(1.5)`, opacity: 1, offset: 0.55 },
       { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`, opacity: 0.2 },
-    ], { duration: 1100, delay: 350 + i * 200, easing: 'cubic-bezier(.45, 0, .25, 1)', fill: 'both' });
+    ], { duration: 1400, delay: 500 + i * 250, easing: 'cubic-bezier(.45, 0, .25, 1)', fill: 'both' });
 
     const land = () => {
       flyer.remove();

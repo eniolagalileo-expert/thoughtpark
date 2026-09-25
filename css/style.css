@@ -130,6 +130,48 @@ body[data-theme="morning"] .sky-star { pointer-events: none; }
   transition: translate 2200ms var(--ease), opacity 2200ms var(--ease);
 }
 body[data-theme="morning"] .sky-sun { translate: -50% 0; opacity: .7; }
+
+/* Moon (night) and sun (morning) share a spot in the upper right. At sunrise
+   the moon sets and the sun rises. */
+.sky-moon, .sky-sun-disc {
+  position: absolute;
+  top: 78px;
+  right: max(8vw, 28px);
+  transition: translate 2400ms var(--ease), opacity 2000ms var(--ease), scale 800ms var(--ease);
+}
+.sky-moon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  /* The crescent is the shadow of a transparent circle. */
+  box-shadow: 13px 7px 0 0 #f4dfa6;
+  filter: drop-shadow(0 0 14px rgba(242, 207, 122, .55)) drop-shadow(0 0 40px rgba(242, 207, 122, .25));
+  translate: -13px -7px;
+}
+body[data-theme="morning"] .sky-moon { translate: -13px 40vh; opacity: 0; }
+
+.sky-sun-disc {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 40%, #fff3c4, #ffd36b 45%, #f6a93b 100%);
+  box-shadow: 0 0 30px 10px rgba(255, 196, 90, .55), 0 0 90px 30px rgba(255, 180, 80, .3);
+  translate: 0 45vh;
+  opacity: 0;
+}
+.sky-sun-disc::before {
+  content: "";
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 200, 90, .55) 0 6deg, transparent 6deg 24deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 58%, #000 62%, transparent 100%);
+  mask: radial-gradient(closest-side, transparent 58%, #000 62%, transparent 100%);
+  animation: sun-rays 40s linear infinite;
+}
+@keyframes sun-rays { to { rotate: 360deg; } }
+body[data-theme="morning"] .sky-sun-disc { translate: 0 0; opacity: 1; }
+body.is-all-clear .sky-sun-disc { scale: 1.25; }
 body[data-theme="morning"] .sky-decor,
 body[data-theme="morning"] .sky-stars { opacity: 0; }
 
@@ -197,11 +239,11 @@ body.is-goodnight .sky { z-index: 3; }
 .mode-toggle button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); }
 .mode-toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-/* Screen column */
+/* Screen column. The extra top space is a strip of sky for the moon and sun. */
 .screen {
   max-width: 480px;
   margin: 0 auto;
-  padding: 28px 24px 120px;
+  padding: 88px 24px 120px;
 }
 
 .screen-title { font-size: 1.6rem; line-height: 1.25; margin: 8px 0 20px; font-weight: 700; }
@@ -387,7 +429,8 @@ body[data-theme="morning"] .morning-summary { color: #a8761c; }
 }
 .morning-letgo:hover { color: var(--text); background: var(--surface); }
 .morning-letgo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.checklist li.is-releasing { pointer-events: none; animation: card-release var(--release-ms) var(--ease) forwards; }
+/* Higher specificity than .is-arriving / .is-entering so Let go always animates. */
+.checklist li.morning-item.is-releasing { pointer-events: none; animation: card-release var(--release-ms) var(--ease) forwards; }
 
 .check-box { position: relative; }
 .sunburst {
@@ -429,11 +472,11 @@ body.is-all-clear .sky-sun { opacity: 1; translate: -50% -12vh; }
 .falling-star {
   position: fixed;
   z-index: 4;
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #fff6d8;
-  box-shadow: 0 0 10px 4px rgba(242, 207, 122, .7), 0 0 30px 10px rgba(242, 207, 122, .3);
+  background: #fff3c4;
+  box-shadow: 0 0 0 2px rgba(246, 169, 59, .6), 0 0 14px 6px rgba(246, 169, 59, .7), 0 0 36px 14px rgba(246, 169, 59, .35);
   pointer-events: none;
 }
 .checklist li.is-waiting { opacity: 0; animation: none; }
@@ -560,7 +603,8 @@ body.is-all-clear .sky-sun { opacity: 1; translate: -50% -12vh; }
   .sky-dot, .sky-star, .sky-star.is-new, .prompt.is-fresh { animation: none; }
   .sky-shooting { animation: shoot-fade 600ms linear forwards; transform: rotate(-25deg); }
   @keyframes shoot-fade { from { opacity: .8; } to { opacity: 0; } }
-  .sky-sun, .sky-decor, .sky-stars { transition-duration: 1ms; }
+  .sky-sun, .sky-decor, .sky-stars, .sky-moon, .sky-sun-disc { transition-duration: 1ms; }
+  .sky-sun-disc::before { animation: none; }
   .breath-circle { transform: scale(.8); }
   .checklist li.is-arriving, .checklist li.is-arriving .check-box, .all-clear.is-fresh { animation: none; }
   .sleep-overlay { animation-duration: 400ms; }
