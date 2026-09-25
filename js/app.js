@@ -1,8 +1,9 @@
 // Screens and event handling for ThoughtPark.
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
-  load, save, MAX_LENGTH,
+  load, save, promptAt, MAX_LENGTH,
 } from './store.js';
+import { renderSky, shootingStar } from './sky.js';
 
 const screen = document.getElementById('screen');
 const toggle = document.getElementById('mode-toggle');
@@ -12,6 +13,7 @@ const themeColor = document.querySelector('meta[name="theme-color"]');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const UNDO_MS = 5000;
+const PROMPT_IDLE_MS = 6000;
 
 // localStorage can throw on access in some privacy modes, so reach it lazily.
 const storage = {
@@ -29,9 +31,17 @@ let session = { parked: 0, released: 0 };
 let undo = null;
 let undoTimer = null;
 
+let promptTimer = null;
+let promptIndex = 0;
+
 function commit(next) {
   state = next;
   if (!save(storage, state)) showSavingOff();
+  updateSky();
+}
+
+function updateSky() {
+  renderSky(state.parked.filter((t) => !t.done));
 }
 
 function showSavingOff() {
@@ -74,6 +84,7 @@ function setMode(next) {
     button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
   }
   clearUndo();
+  stopPrompts();
   if (mode === 'night') renderNight();
   else renderMorning();
 }
@@ -113,6 +124,7 @@ function applyUndo() {
 
 function renderNight({ keepSession = false } = {}) {
   if (!keepSession) session = { parked: 0, released: 0 };
+  stopPrompts();
 
   const input = el('textarea', {
     id: 'thought',
@@ -133,6 +145,7 @@ function renderNight({ keepSession = false } = {}) {
     textContent: 'Type each thought, then park it. They’ll be waiting in the morning.',
     hidden: state.seenHint,
   });
+  const prompt = el('p', { className: 'prompt', id: 'prompt', hidden: true });
   const list = el('ul', { className: 'cards', id: 'cards' });
   list.setAttribute('aria-live', 'polite');
   const counter = el('p', { className: 'parked-count', id: 'parked-count' });
@@ -146,7 +159,11 @@ function renderNight({ keepSession = false } = {}) {
     list.prepend(cardFor(result.thought));
     input.value = '';
     input.focus();
+    schedulePrompt(input, prompt);
   });
+
+  // Any typing hides the prompt; an empty, untouched box brings it back later.
+  input.addEventListener('input', () => schedulePrompt(input, prompt));
 
   // Enter adds the thought; Shift+Enter is ignored so the box stays one thought at a time.
   input.addEventListener('keydown', (event) => {
@@ -162,11 +179,37 @@ function renderNight({ keepSession = false } = {}) {
     el('h1', { className: 'screen-title', textContent: 'Park your thoughts for tonight' }),
     form,
     hint,
+    prompt,
     list,
     counter,
   );
   updateCounter(false);
   input.focus();
+  schedulePrompt(input, prompt);
+}
+
+// ---- Gentle prompts -------------------------------------------------------
+
+function schedulePrompt(input, prompt) {
+  stopPrompts();
+  prompt.hidden = true;
+  if (input.value.trim()) return;
+  const showNext = () => {
+    if (!prompt.isConnected || input.value.trim()) return;
+    prompt.textContent = promptAt(promptIndex);
+    promptIndex += 1;
+    prompt.hidden = false;
+    prompt.classList.remove('is-fresh');
+    void prompt.offsetWidth; // restart the fade-in
+    prompt.classList.add('is-fresh');
+    promptTimer = setTimeout(showNext, PROMPT_IDLE_MS);
+  };
+  promptTimer = setTimeout(showNext, PROMPT_IDLE_MS);
+}
+
+function stopPrompts() {
+  clearTimeout(promptTimer);
+  promptTimer = null;
 }
 
 function cardFor(thought) {
@@ -183,6 +226,7 @@ function cardFor(thought) {
     commit(releaseThought(state, thought.id).state);
     session.released += 1;
     animateOut(card, 'is-releasing', '--release-ms');
+    shootingStar();
     offerUndo('Let go', before, 'released');
   });
   park.addEventListener('click', () => {
@@ -223,6 +267,7 @@ function updateCounter(bump) {
 // ---- Goodnight screen -----------------------------------------------------
 
 function renderGoodnight() {
+  stopPrompts();
   const summary = [
     session.parked ? `${plural(session.parked, 'thought')} parked` : null,
     session.released ? `${session.released} let go` : null,
@@ -297,4 +342,7 @@ function renderMorningList() {
 
 // Check once at startup whether this browser lets us save at all.
 if (!save(storage, state)) showSavingOff();
-setMode(mode);
+updateSky();
+// Wait two frames so the page first paints as night; opening in the morning
+// then plays the sunrise transition.
+requestAnimationFrame(() => requestAnimationFrame(() => setMode(mode)));

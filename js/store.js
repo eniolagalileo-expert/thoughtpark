@@ -115,3 +115,45 @@ export function save(storage, state) {
     return false;
   }
 }
+
+// ---- Night sky ------------------------------------------------------------
+
+// Small stable string hash (FNV-1a), so a thought's star never moves.
+export function hashString(text) {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+// Position in percent of the screen: kept away from the edges and in the
+// upper part, like a real night sky above the horizon.
+export function starPosition(id) {
+  const a = hashString(id);
+  const b = hashString(`${id}:y`);
+  return {
+    x: 6 + (a % 8800) / 100,
+    y: 4 + (b % 5600) / 100,
+    size: 3 + (a % 3),
+  };
+}
+
+// ---- Gentle prompts -------------------------------------------------------
+
+export const PROMPTS = [
+  'Anything about work or school?',
+  'Someone you need to reply to?',
+  'Something you’re worried might go wrong?',
+  'A bill, a form, or a deadline?',
+  'Something you said today that’s still bothering you?',
+  'Anything you need to buy or pick up?',
+  'A plan for tomorrow you keep going over?',
+  'Something about family or friends?',
+];
+
+export function promptAt(n) {
+  const len = PROMPTS.length;
+  return PROMPTS[((n % len) + len) % len];
+}

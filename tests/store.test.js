@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
+  starPosition, hashString, promptAt, PROMPTS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -136,4 +137,35 @@ test('save and load survive a storage that throws', () => {
   };
   assert.equal(save(broken, emptyState()), false);
   assert.deepEqual(load(broken), emptyState());
+});
+
+// ---- Slice 4: night sky and prompts --------------------------------------
+
+test('starPosition is stable for the same id', () => {
+  assert.deepEqual(starPosition('abc123'), starPosition('abc123'));
+  assert.equal(hashString('abc123'), hashString('abc123'));
+});
+
+test('starPosition stays inside the visible sky', () => {
+  for (let i = 0; i < 500; i += 1) {
+    const { x, y, size } = starPosition(`id-${i}-${Math.random()}`);
+    assert.ok(x >= 6 && x < 94, `x ${x}`);
+    assert.ok(y >= 4 && y < 60, `y ${y}`);
+    assert.ok(size >= 3 && size <= 5, `size ${size}`);
+  }
+});
+
+test('different ids usually land in different places', () => {
+  const spots = new Set(Array.from({ length: 50 }, (_, i) => {
+    const { x, y } = starPosition(`thought-${i}`);
+    return `${Math.round(x)},${Math.round(y)}`;
+  }));
+  assert.ok(spots.size > 40);
+});
+
+test('promptAt cycles through the prompt list', () => {
+  assert.equal(promptAt(0), PROMPTS[0]);
+  assert.equal(promptAt(PROMPTS.length), PROMPTS[0]);
+  assert.equal(promptAt(PROMPTS.length + 2), PROMPTS[2]);
+  assert.equal(promptAt(-1), PROMPTS[PROMPTS.length - 1]);
 });

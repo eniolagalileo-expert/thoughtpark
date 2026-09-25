@@ -39,7 +39,7 @@ Build mode: fast (learner approved)
   Learner check: Park your last thought and read the Goodnight screen; then let a thought go and press Undo before it disappears.
   Commit: `Add goodnight screen, undo, and empty states`
 
-- [ ] **4. Your thoughts become stars, and prompts help you empty your mind**
+- [x] **4. Your thoughts become stars, and prompts help you empty your mind**
   Becomes usable: A night sky sits behind the Night and Goodnight screens; each parked thought is a star that stays in place, letting a thought go sends a shooting star, switching to Morning plays a sunrise; when you stop typing, gentle prompts appear under the box.
   Why now: Learner-approved improvements that build on the working journey from slices 1–3 (star positions depend on saved parked thoughts, and the shooting star hooks into release and undo).
   PRD ref: `prd.md > Night sky`, `prd.md > Gentle prompts`
