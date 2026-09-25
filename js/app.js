@@ -2,9 +2,13 @@
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
-  setNote, MAX_LENGTH,
+  setNote, crisisCheck, splitLocally, MAX_LENGTH,
 } from './store.js';
-import { openTalk, openSettings } from './companion.js';
+import { openTalk, openSettings, showCrisis } from './companion.js';
+import { splitThoughts, friendlyError } from './ai.js';
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
 import { renderSky, shootingStar, hideStarInfo } from './sky.js';
 
 const screen = document.getElementById('screen');
@@ -91,6 +95,7 @@ function setMode(next) {
   stopPrompts();
   stopBreathing();
   hideStarInfo();
+  recognition?.abort();
   document.body.classList.remove('is-all-clear', 'is-goodnight');
   for (const flyer of document.querySelectorAll('.falling-star')) flyer.remove();
   if (mode === 'night') renderNight();
@@ -159,9 +164,11 @@ function renderNight({ keepSession = false } = {}) {
     autocomplete: 'off',
   });
   const add = el('button', { type: 'submit', className: 'btn btn-primary', textContent: 'Add' });
+  const mic = micButton(input);
   const form = el('form', { className: 'compose' }, [
     el('label', { htmlFor: 'thought', className: 'sr-only', textContent: "What's on your mind?" }),
     input,
+    ...(mic ? [mic] : []),
     add,
   ]);
   const hint = el('p', {
@@ -171,6 +178,8 @@ function renderNight({ keepSession = false } = {}) {
     hidden: state.seenHint,
   });
   const prompt = el('p', { className: 'prompt', id: 'prompt', hidden: true });
+  const voiceStatus = el('p', { className: 'voice-status', id: 'voice-status', hidden: true });
+  voiceStatus.setAttribute('role', 'status');
   const list = el('ul', { className: 'cards', id: 'cards' });
   list.setAttribute('aria-live', 'polite');
   const counter = el('p', { className: 'parked-count', id: 'parked-count' });
@@ -204,6 +213,7 @@ function renderNight({ keepSession = false } = {}) {
     el('h1', { className: 'screen-title', textContent: 'Park your thoughts for tonight' }),
     form,
     hint,
+    voiceStatus,
     prompt,
     list,
     counter,
@@ -211,6 +221,106 @@ function renderNight({ keepSession = false } = {}) {
   updateCounter(false);
   input.focus();
   schedulePrompt(input, prompt);
+}
+
+// ---- Speak instead of type -------------------------------------------------
+
+function micButton(input) {
+  if (!SpeechRecognition) return null;
+  const button = el('button', { type: 'button', className: 'mic-button', id: 'mic' });
+  button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>';
+  button.setAttribute('aria-label', 'Speak your thoughts');
+  button.title = 'Speak your thoughts';
+  button.addEventListener('click', () => {
+    if (recognition) recognition.stop();
+    else listen(button, input);
+  });
+  return button;
+}
+
+function listen(button, input) {
+  const status = document.getElementById('voice-status');
+  let transcript = '';
+  recognition = new SpeechRecognition();
+  recognition.lang = navigator.language || 'en-US';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  stopPrompts();
+  button.classList.add('is-listening');
+  button.setAttribute('aria-label', 'Stop listening');
+  showVoiceStatus('Listening… say everything on your mind, then tap the microphone again.');
+
+  recognition.onresult = (event) => {
+    let interim = '';
+    transcript = '';
+    for (const result of event.results) {
+      if (result.isFinal) transcript += `${result[0].transcript} `;
+      else interim += result[0].transcript;
+    }
+    input.placeholder = (transcript + interim).trim() || "What's on your mind?";
+  };
+  recognition.onerror = (event) => {
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      showVoiceStatus('Microphone access is blocked. Allow it in your browser to speak your thoughts.');
+    } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+      showVoiceStatus('Couldn’t hear that. Try again, or type instead.');
+    }
+  };
+  recognition.onend = () => {
+    recognition = null;
+    button.classList.remove('is-listening');
+    button.setAttribute('aria-label', 'Speak your thoughts');
+    input.placeholder = "What's on your mind?";
+    const spoken = transcript.trim();
+    if (spoken) addSpoken(spoken);
+    else if (status && !status.dataset.sticky) hideVoiceStatus();
+  };
+  recognition.start();
+}
+
+function showVoiceStatus(text) {
+  const status = document.getElementById('voice-status');
+  if (!status) return;
+  status.textContent = text;
+  status.hidden = false;
+}
+
+function hideVoiceStatus() {
+  const status = document.getElementById('voice-status');
+  if (status) status.hidden = true;
+}
+
+// Turn what was said into separate thought cards: Claude splits it when a key
+// is set; otherwise (or if that fails) a simple local split is used.
+async function addSpoken(spoken) {
+  if (crisisCheck(spoken)) {
+    hideVoiceStatus();
+    showCrisis();
+    return;
+  }
+  showVoiceStatus('Sorting what you said into separate thoughts…');
+  let thoughts = null;
+  let note = '';
+  try {
+    thoughts = await splitThoughts(spoken);
+  } catch (error) {
+    note = ` (${friendlyError(error)} Used a simple split instead.)`;
+  }
+  if (!thoughts || thoughts.length === 0) thoughts = splitLocally(spoken);
+
+  const list = document.getElementById('cards');
+  if (mode !== 'night' || !list) return;
+  // Add in reverse so the first thing said ends up on top.
+  for (const text of [...thoughts].reverse()) {
+    const result = addThought(state, text);
+    if (!result.thought) continue;
+    commit({ ...result.state, seenHint: true });
+    list.prepend(cardFor(result.thought));
+  }
+  document.getElementById('hint')?.setAttribute('hidden', '');
+  showVoiceStatus(`Added ${plural(thoughts.length, 'thought')} from what you said.${note}`);
+  setTimeout(hideVoiceStatus, 6000);
 }
 
 // ---- Gentle prompts -------------------------------------------------------

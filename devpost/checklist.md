@@ -79,7 +79,7 @@ Build mode: fast (learner approved)
   Learner check: Add your API key in Settings, talk through one worry, and park it with its note.
   Commit: `Add Talk it through with Claude, settings, and safety`
 
-- [ ] **8. Speak your thoughts instead of typing**
+- [x] **8. Speak your thoughts instead of typing**
   Becomes usable: A microphone button turns spoken words into separate thought cards.
   Why now: Builds on the AI client from slice 7.
   PRD ref: `prd.md > AI companion` (Speak instead of type)

@@ -55,7 +55,7 @@ function crisisCard() {
   ]);
 }
 
-function showCrisis() {
+export function showCrisis() {
   talkDialog.replaceChildren(
     el('header', { className: 'sheet-header' }, [
       el('h2', { id: 'talk-title', className: 'sheet-title', textContent: 'Support' }),

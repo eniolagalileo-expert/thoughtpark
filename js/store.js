@@ -264,3 +264,18 @@ export function setNote(state, id, note) {
   };
   return { ...state, pending: state.pending.map(withNote), parked: state.parked.map(withNote) };
 }
+
+// Split spoken words into separate thoughts without AI: sentences first, then
+// "and" / "also" joins. Very short fragments stay with the previous thought.
+export function splitLocally(transcript) {
+  const parts = [];
+  for (const sentence of String(transcript ?? '').split(/[.!?;\n]+/)) {
+    for (const piece of sentence.split(/,?\s+(?:and also|and then|and|also|plus)\s+/i)) {
+      const clean = cleanText(piece.replace(/^(?:(?:um+|uh+|so|okay|ok|well)[,\s]+)+/i, ''));
+      if (!clean) continue;
+      if (parts.length && clean.split(' ').length < 3) parts[parts.length - 1] += ` and ${clean}`;
+      else parts.push(clean);
+    }
+  }
+  return parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1));
+}

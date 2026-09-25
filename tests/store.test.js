@@ -4,7 +4,7 @@ import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
   starPosition, hashString, promptAt, PROMPTS, breathPhase,
-  letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote,
+  letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote, splitLocally,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -271,4 +271,21 @@ test('notes survive saving and parking', () => {
   save(storage, state);
   assert.equal(load(storage).parked[0].note, 'Check the form online');
   assert.equal(parseState('{"parked":[{"id":"a","text":"t","note":42}]}').parked[0].note, undefined);
+});
+
+test('splitLocally splits spoken words into separate thoughts', () => {
+  assert.deepEqual(
+    splitLocally('I need to call mom and the report is due Friday and I keep thinking about the meeting'),
+    ['I need to call mom', 'The report is due Friday', 'I keep thinking about the meeting'],
+  );
+  assert.deepEqual(
+    splitLocally('um so pay the electric bill. Also renew my passport!'),
+    ['Pay the electric bill', 'Renew my passport'],
+  );
+});
+
+test('splitLocally keeps short fragments with the previous thought', () => {
+  assert.deepEqual(splitLocally('buy bread and milk'), ['Buy bread and milk']);
+  assert.deepEqual(splitLocally(''), []);
+  assert.deepEqual(splitLocally(undefined), []);
 });
