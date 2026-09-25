@@ -1,7 +1,8 @@
 // Screens and event handling for ThoughtPark.
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
-  load, save, promptAt, breathPhase, MAX_LENGTH,
+  load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
+  MAX_LENGTH,
 } from './store.js';
 import { renderSky, shootingStar, hideStarInfo } from './sky.js';
 
@@ -89,6 +90,8 @@ function setMode(next) {
   stopPrompts();
   stopBreathing();
   hideStarInfo();
+  document.body.classList.remove('is-all-clear', 'is-goodnight');
+  for (const flyer of document.querySelectorAll('.falling-star')) flyer.remove();
   if (mode === 'night') renderNight();
   else renderMorning();
 }
@@ -120,14 +123,16 @@ function applyUndo() {
   const { before, kind } = undo;
   clearUndo();
   commit(before);
-  session[kind] = Math.max(0, session[kind] - 1);
-  renderNight({ keepSession: true });
+  if (kind in session) session[kind] = Math.max(0, session[kind] - 1);
+  if (mode === 'night') renderNight({ keepSession: true });
+  else renderMorning({ animate: false });
 }
 
 // ---- Night screen ---------------------------------------------------------
 
 function renderNight({ keepSession = false } = {}) {
   if (!keepSession) session = { parked: 0, released: 0 };
+  document.body.classList.remove('is-goodnight');
   stopPrompts();
 
   const input = el('textarea', {
@@ -227,7 +232,7 @@ function cardFor(thought) {
 
   release.addEventListener('click', () => {
     const before = state;
-    commit(releaseThought(state, thought.id).state);
+    commit(recordNight(releaseThought(state, thought.id).state, 'released'));
     session.released += 1;
     animateOut(card, 'is-releasing', '--release-ms');
     shootingStar();
@@ -235,7 +240,7 @@ function cardFor(thought) {
   });
   park.addEventListener('click', () => {
     const before = state;
-    commit(parkThought(state, thought.id).state);
+    commit(recordNight(parkThought(state, thought.id).state, 'parked'));
     session.parked += 1;
     animateOut(card, 'is-parking', '--park-ms');
     updateCounter(true);
@@ -273,6 +278,7 @@ function updateCounter(bump) {
 function renderGoodnight() {
   stopPrompts();
   stopBreathing();
+  document.body.classList.add('is-goodnight');
   const summary = [
     session.parked ? `${plural(session.parked, 'thought')} parked` : null,
     session.released ? `${session.released} let go` : null,
@@ -353,8 +359,11 @@ function renderSleep() {
 
 // ---- Morning screen -------------------------------------------------------
 
-function renderMorning() {
+function renderMorning({ animate = true } = {}) {
+  const summaryText = nightSummary(state.night);
+  commit(markNightSeen(state));
   const items = morningList(state);
+
   const toNight = el('button', {
     type: 'button',
     className: 'link-button',
@@ -362,9 +371,15 @@ function renderMorning() {
   });
   toNight.addEventListener('click', () => setMode('night'));
 
+  const header = [el('h1', { className: 'screen-title', textContent: 'Good morning' })];
+  if (summaryText) {
+    header.push(el('p', { className: 'morning-summary', id: 'morning-summary', textContent: summaryText }));
+  }
+
   if (items.length === 0) {
+    document.body.classList.remove('is-all-clear');
     screen.replaceChildren(
-      el('h1', { className: 'screen-title', textContent: 'Good morning' }),
+      ...header,
       el('p', { className: 'screen-sub', textContent: 'Nothing was parked. Clear mind, clear day.' }),
       toNight,
     );
@@ -373,38 +388,133 @@ function renderMorning() {
 
   const list = el('ul', { className: 'checklist is-entering', id: 'morning-list' });
   for (const thought of items) list.append(checkItemFor(thought));
+  const allClear = el('p', { className: 'all-clear', id: 'all-clear', hidden: true }, [
+    el('span', { className: 'all-clear-sun' }),
+    'All clear. Have a good day.',
+  ]);
 
   screen.replaceChildren(
-    el('h1', { className: 'screen-title', textContent: 'Good morning' }),
-    el('p', { className: 'screen-sub', textContent: 'Here’s what you parked last night.' }),
+    ...header,
+    el('p', {
+      className: 'screen-sub',
+      textContent: 'Here’s what you parked last night. Done with one, or it doesn’t matter anymore? Check it off or let it go.',
+    }),
+    allClear,
     list,
     toNight,
   );
+  updateAllClear(false);
+  if (animate) arriveFromSky(list);
 }
 
 function checkItemFor(thought) {
-  const button = el('button', { type: 'button', className: 'check-item' }, [
+  const check = el('button', { type: 'button', className: 'check-item' }, [
     el('span', { className: 'check-box' }),
     el('span', { className: 'check-text', textContent: thought.text }),
   ]);
-  button.setAttribute('role', 'checkbox');
-  button.setAttribute('aria-checked', String(thought.done));
-  button.addEventListener('click', () => {
+  check.setAttribute('role', 'checkbox');
+  check.setAttribute('aria-checked', String(thought.done));
+  check.addEventListener('click', () => {
     commit(toggleDone(state, thought.id));
     renderMorningList();
+    if (!thought.done) sunburst(thought.id);
+    updateAllClear(true);
   });
-  const item = el('li', { className: thought.done ? 'is-done' : '' }, button);
+
+  const item = el('li', { className: `morning-item${thought.done ? ' is-done' : ''}` }, check);
   item.dataset.id = thought.id;
+
+  if (!thought.done) {
+    const letGo = el('button', { type: 'button', className: 'morning-letgo', textContent: 'Let go' });
+    letGo.title = 'Doesn’t matter anymore';
+    letGo.setAttribute('aria-label', `Doesn’t matter anymore: let go of “${thought.text}”`);
+    letGo.addEventListener('click', () => {
+      const before = state;
+      commit(letGoParked(state, thought.id));
+      offerUndo('Let go', before, 'dismissed');
+      item.classList.add('is-releasing');
+      setTimeout(() => {
+        if (mode !== 'morning' || !item.isConnected) return;
+        if (morningList(state).length === 0) renderMorning({ animate: false });
+        else { renderMorningList(); updateAllClear(true); }
+      }, motionMs('--release-ms'));
+    });
+    item.append(letGo);
+  }
   return item;
 }
 
 // Re-render just the list, keeping focus on the item that was tapped.
 function renderMorningList() {
   const list = document.getElementById('morning-list');
+  if (!list) return;
   list.classList.remove('is-entering');
   const focusedId = document.activeElement?.closest('li')?.dataset.id;
   list.replaceChildren(...morningList(state).map(checkItemFor));
-  if (focusedId) list.querySelector(`li[data-id="${focusedId}"] button`)?.focus();
+  if (focusedId) list.querySelector(`li[data-id="${focusedId}"] .check-item`)?.focus();
+}
+
+// "All clear" shows only when every item is checked; the sun glows brighter.
+function updateAllClear(celebrate) {
+  const allClear = document.getElementById('all-clear');
+  if (!allClear) return;
+  const items = morningList(state);
+  const done = items.length > 0 && items.every((t) => t.done);
+  const wasHidden = allClear.hidden;
+  allClear.hidden = !done;
+  document.body.classList.toggle('is-all-clear', done);
+  if (celebrate && done && wasHidden) {
+    allClear.classList.remove('is-fresh');
+    void allClear.offsetWidth; // restart the animation
+    allClear.classList.add('is-fresh');
+  }
+}
+
+// A short burst of sun rays from a checkbox that was just ticked.
+function sunburst(id) {
+  if (reduceMotion.matches) return;
+  const box = document.querySelector(`#morning-list li[data-id="${id}"] .check-box`);
+  if (!box) return;
+  const burst = el('span', { className: 'sunburst' });
+  box.append(burst);
+  burst.addEventListener('animationend', () => burst.remove(), { once: true });
+  setTimeout(() => burst.remove(), 1500);
+}
+
+// At sunrise, each star falls from the sky into its checklist item.
+function arriveFromSky(list) {
+  if (reduceMotion.matches || typeof Element.prototype.animate !== 'function') return;
+  [...list.children].forEach((item, i) => {
+    const star = document.querySelector(`.sky-star[data-id="${item.dataset.id}"]`);
+    const box = item.querySelector('.check-box');
+    if (!star || !box) return;
+    const from = star.getBoundingClientRect();
+    const to = box.getBoundingClientRect();
+    const startX = from.left + from.width / 2;
+    const startY = from.top + from.height / 2;
+    const dx = to.left + to.width / 2 - startX;
+    const dy = to.top + to.height / 2 - startY;
+
+    item.classList.add('is-waiting');
+    const flyer = el('span', { className: 'falling-star' });
+    flyer.style.left = `${startX}px`;
+    flyer.style.top = `${startY}px`;
+    document.body.append(flyer);
+
+    const flight = flyer.animate([
+      { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx * 0.35}px), calc(-50% + ${dy * 0.6}px)) scale(1.5)`, opacity: 1, offset: 0.55 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(.7)`, opacity: 0.2 },
+    ], { duration: 1100, delay: 350 + i * 200, easing: 'cubic-bezier(.45, 0, .25, 1)', fill: 'both' });
+
+    const land = () => {
+      flyer.remove();
+      item.classList.remove('is-waiting');
+      item.classList.add('is-arriving');
+    };
+    flight.onfinish = land;
+    flight.oncancel = land;
+  });
 }
 
 // Check once at startup whether this browser lets us save at all.

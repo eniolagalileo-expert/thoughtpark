@@ -77,7 +77,7 @@ Build mode: fast (learner approved)
 ## Final Review
 
 - [x] Star info: hovering or tapping a parked star shows its thought and parked time — learner request at final review; verified on desktop (hover) and phone (tap), all slice checks re-run.
-- [ ] Morning: more animation and a new idea — learner request at final review; proposal pending learner approval.
+- [x] Morning moments: stars fall into the list, check-off burst and All clear, morning Let go, last night's summary — learner request at final review; learner approved all four. Verified: 20 browser checks (normal and reduced motion), 4 new unit tests, all earlier checks re-run.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -97,3 +97,4 @@ Activity mode:
 - Added slices 4 (night sky and gentle prompts) and 5 (breathing moment); polish became slice 6 — at the first checkpoint the learner asked to improve the idea and approved three additions, recorded in `scope.md`, `prd.md`, and `spec.md`.
 - Undo restores a saved copy of the state from just before the action instead of a `restore()` helper, and is verified in the browser rather than a unit test — this reverses the action exactly, including checked-off morning items that parking clears.
 - The sunrise is driven by CSS on the theme change rather than a `sunrise()` function in `sky.js` — a CSS transition on `body[data-theme]` was simpler and already plays whenever the mode changes.
+- On the Goodnight and Breathing screens the sky layer now sits above the text (buttons stay on top), and star positions start below the header — found while verifying star info: stars behind text or the header couldn't be hovered.

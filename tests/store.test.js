@@ -4,6 +4,7 @@ import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
   starPosition, hashString, promptAt, PROMPTS, breathPhase,
+  letGoParked, recordNight, markNightSeen, nightSummary,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -150,7 +151,7 @@ test('starPosition stays inside the visible sky', () => {
   for (let i = 0; i < 500; i += 1) {
     const { x, y, size } = starPosition(`id-${i}-${Math.random()}`);
     assert.ok(x >= 6 && x < 94, `x ${x}`);
-    assert.ok(y >= 4 && y < 60, `y ${y}`);
+    assert.ok(y >= 11 && y < 60, `y ${y}`);
     assert.ok(size >= 3 && size <= 5, `size ${size}`);
   }
 });
@@ -192,4 +193,40 @@ test('breathPhase progress runs from 0 to 1 within each phase', () => {
   assert.equal(breathPhase(4000).progress, 0);
   assert.equal(breathPhase(7000).progress, 0.5);
   assert.equal(breathPhase(-50).progress, 0);
+});
+
+// ---- Morning moments -----------------------------------------------------
+
+test('letGoParked removes a parked thought for good', () => {
+  const state = withParked('keep', 'drop');
+  const id = state.parked.find((t) => t.text === 'drop').id;
+  assert.deepEqual(letGoParked(state, id).parked.map((t) => t.text), ['keep']);
+});
+
+test('recordNight counts parks and releases until the morning is seen', () => {
+  let state = emptyState();
+  state = recordNight(state, 'parked');
+  state = recordNight(state, 'parked');
+  state = recordNight(state, 'released');
+  assert.deepEqual(state.night, { parked: 2, released: 1, seen: false });
+  state = markNightSeen(state);
+  assert.equal(state.night.seen, true);
+  assert.equal(markNightSeen(state), state);
+  state = recordNight(state, 'released');
+  assert.deepEqual(state.night, { parked: 0, released: 1, seen: false });
+});
+
+test('nightSummary describes last night in plain words', () => {
+  assert.equal(nightSummary({ parked: 3, released: 2 }), 'Last night you parked 3 thoughts and let go of 2. You slept on it.');
+  assert.equal(nightSummary({ parked: 1, released: 0 }), 'Last night you parked 1 thought. You slept on it.');
+  assert.equal(nightSummary({ parked: 0, released: 1 }), 'Last night you let go of 1 thought.');
+  assert.equal(nightSummary({ parked: 0, released: 0 }), null);
+  assert.equal(nightSummary(undefined), null);
+});
+
+test('night counts survive saving and bad values are cleaned', () => {
+  const storage = memoryStorage();
+  save(storage, recordNight(emptyState(), 'parked'));
+  assert.deepEqual(load(storage).night, { parked: 1, released: 0, seen: false });
+  assert.deepEqual(parseState('{"night":{"parked":-4,"released":"x"}}').night, { parked: 0, released: 0, seen: false });
 });

@@ -5,7 +5,12 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false };
+  return { pending: [], parked: [], seenHint: false, night: emptyNight() };
+}
+
+// Only counts are kept about last night, never the released text.
+function emptyNight() {
+  return { parked: 0, released: 0, seen: false };
 }
 
 export function makeId() {
@@ -61,6 +66,35 @@ export function clearDone(state) {
   return { ...state, parked: state.parked.filter((t) => !t.done) };
 }
 
+// Morning "Doesn't matter anymore": the parked thought is let go for good.
+export function letGoParked(state, id) {
+  return { ...state, parked: state.parked.filter((t) => t.id !== id) };
+}
+
+// ---- Last night's summary -------------------------------------------------
+
+// Count a night park or release. Once the morning has been seen, the next
+// night action starts a fresh count.
+export function recordNight(state, kind) {
+  const current = state.night && !state.night.seen ? state.night : emptyNight();
+  return { ...state, night: { ...current, [kind]: current[kind] + 1 } };
+}
+
+export function markNightSeen(state) {
+  if (!state.night || state.night.seen) return state;
+  return { ...state, night: { ...state.night, seen: true } };
+}
+
+export function nightSummary(night) {
+  const parked = night?.parked ?? 0;
+  const released = night?.released ?? 0;
+  const thoughts = (n) => `${n} thought${n === 1 ? '' : 's'}`;
+  if (parked && released) return `Last night you parked ${thoughts(parked)} and let go of ${released}. You slept on it.`;
+  if (parked) return `Last night you parked ${thoughts(parked)}. You slept on it.`;
+  if (released) return `Last night you let go of ${thoughts(released)}.`;
+  return null;
+}
+
 // Morning order: open items newest first, then checked-off items.
 export function morningList(state) {
   const byNewest = (a, b) => b.parkedAt - a.parkedAt;
@@ -91,10 +125,17 @@ export function parseState(raw) {
         ? data.parked.filter(isThought).map((t) => ({ ...t, done: Boolean(t.done) }))
         : [],
       seenHint: Boolean(data.seenHint),
+      night: parseNight(data.night),
     };
   } catch {
     return emptyState();
   }
+}
+
+function parseNight(night) {
+  if (!night || typeof night !== 'object') return emptyNight();
+  const count = (n) => (Number.isInteger(n) && n > 0 ? n : 0);
+  return { parked: count(night.parked), released: count(night.released), seen: Boolean(night.seen) };
 }
 
 export function load(storage) {
@@ -128,14 +169,14 @@ export function hashString(text) {
   return hash >>> 0;
 }
 
-// Position in percent of the screen: kept away from the edges and in the
-// upper part, like a real night sky above the horizon.
+// Position in percent of the screen: kept away from the edges, below the
+// header, and in the upper part, like a real night sky above the horizon.
 export function starPosition(id) {
   const a = hashString(id);
   const b = hashString(`${id}:y`);
   return {
     x: 6 + (a % 8800) / 100,
-    y: 4 + (b % 5600) / 100,
+    y: 11 + (b % 4900) / 100,
     size: 3 + (a % 3),
   };
 }

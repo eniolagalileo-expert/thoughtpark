@@ -96,12 +96,27 @@ Source: `scope.md > What "Working" Looks Like`.
   - [ ] Tapping an item checks it off: it gets a checkmark, moves to the bottom, and fades.
   - [ ] Checked items are cleared automatically the next time the user parks new thoughts (proposed).
 
+### Morning moments
+Added at the learner's request during final review ("add some animations and some new idea" for the morning); learner approved all four.
+- **Stars fall into the list.** When the Morning screen opens, each open parked thought's star drops from its place in the sky into its checklist item, one after another, and the item appears as the star lands.
+  - [ ] With two or more parked thoughts, a falling star is visible for each and every item is visible when they finish.
+  - [ ] With reduced motion, items appear without falling stars.
+- **Checking off feels good.** Ticking an item sends a short burst of sun rays from its checkbox. When every item is checked, "All clear. Have a good day." appears and the morning sun glows brighter.
+  - [ ] A burst appears on check-off and disappears by itself.
+  - [ ] "All clear" appears only when every listed item is checked, and disappears if one is unchecked.
+- **"Doesn't matter anymore."** Each open morning item has a quiet "Let go" button. It releases that thought (it drifts away and is not kept), with the usual 5-second Undo.
+  - [ ] Let go removes the item for good after its animation; Undo brings it back.
+  - [ ] Letting go of the last item shows the empty-morning message.
+- **Last night's summary.** Under "Good morning": "Last night you parked 3 thoughts and let go of 2. You slept on it." Only the two counts are saved, never the released text.
+  - [ ] The counts match the parks and releases made at night since the Morning screen was last opened.
+  - [ ] The line is hidden when nothing was parked or released.
+
 ## States and Boundaries
 - **First use:** the Night screen shows a one-line hint under the box: "Type each thought, then park it. They'll be waiting in the morning."
 - **Nothing to park yet:** the Night screen shows only the text box and the hint.
 - **Morning with nothing parked:** "Nothing was parked. Clear mind, clear day." and a link to the Night screen.
 - **Unfinished parking:** if the user closes the app with unparked cards, they're still there next time on the Night screen (proposed).
-- **Persistence:** parked thoughts, checked state, and unparked cards are saved on this device and survive closing and reopening the browser. "Let it go" thoughts are never saved.
+- **Persistence:** parked thoughts, checked state, unparked cards, and last night's two counts are saved on this device and survive closing and reopening the browser. "Let it go" thoughts are never saved.
 - **Boundary:** one person, one device. No accounts, no sharing.
 
 ## Product Decisions
@@ -116,7 +131,8 @@ Source: `scope.md > What "Working" Looks Like`.
 - Goodnight screen with counts
 - Morning screen: checklist of parked thoughts with check-off
 - Time-of-day screen choice plus a manual Night/Morning toggle
-- Night sky with stars, shooting stars, and sunrise
+- Night sky with stars, shooting stars, and sunrise; star info on hover or tap
+- Morning moments: stars falling into the list, check-off burst and "All clear", morning "Let go", last night's summary
 - Gentle prompts when the user stops typing
 - 60-second breathing moment after Goodnight
 - Saving on the device between sessions

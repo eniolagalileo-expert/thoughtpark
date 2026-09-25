@@ -20,11 +20,12 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
 ## What it does
 
 - **Park or let go.** Each thought becomes a card. "Let it go" makes it blur and drift away, and it's never saved. "Tomorrow" parks it.
-- **Your thoughts become stars.** Every parked thought appears as a star in the night sky behind the app, always in the same place. Letting a thought go sends a shooting star across the sky.
+- **Your thoughts become stars.** Every parked thought appears as a star in the night sky behind the app, always in the same place. Hover over a star (or tap it on a phone) to see which thought it is and when you parked it. Letting a thought go sends a shooting star across the sky.
 - **Gentle prompts.** If you stop typing, soft questions appear ("Someone you need to reply to?") to help you empty your mind completely.
 - **All parked. Goodnight.** When nothing is left, a quiet goodnight screen shows what you parked and released.
 - **One minute of breathing.** An optional guided minute (4 seconds in, 6 seconds out), then the screen dims to near-black.
-- **Morning handoff.** A sunrise fades the stars, and your parked thoughts are waiting as a checklist.
+- **Morning handoff.** At sunrise each star falls from the sky into your checklist, and a line sums up your night: "Last night you parked 3 thoughts and let go of 2. You slept on it." (Only the counts are kept.)
+- **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore. When everything is done: "All clear. Have a good day." 
 - **Forgiving.** Every park or release can be undone for 5 seconds, which helps with half-asleep taps.
 - **Private by design.** No account and no server. Everything stays in your browser on your device, and released thoughts are never stored.
 - **Accessible.** Works with keyboard and screen readers, and respects your device's reduced-motion setting.
@@ -59,12 +60,12 @@ Plain HTML, CSS, and JavaScript with no framework, no build step, and no depende
 |---|---|
 | `index.html` | Page shell: sky layer, header with the Night/Morning toggle, main screen, undo toast |
 | `css/style.css` | Night and morning themes, cards, sky, breathing circle, reduced-motion rules |
-| `js/store.js` | Pure logic with no DOM: adding, parking, releasing, morning order, saving and loading, star positions, prompts, breathing timing |
-| `js/sky.js` | The night sky: decorative stars, one star per parked thought, shooting stars, sunrise |
-| `js/app.js` | Screens and interactions: Night, Goodnight, Breathing, Morning, undo, prompts |
-| `tests/store.test.js` | 21 unit tests for `store.js` using Node's built-in test runner |
+| `js/store.js` | Pure logic with no DOM: adding, parking, releasing, morning order and let go, last night's counts, saving and loading, star positions, prompts, breathing timing |
+| `js/sky.js` | The night sky: decorative stars, one star per parked thought with hover/tap info, shooting stars |
+| `js/app.js` | Screens and interactions: Night, Goodnight, Breathing, Morning (falling stars, sun-ray burst, All clear), undo, prompts |
+| `tests/store.test.js` | 25 unit tests for `store.js` using Node's built-in test runner |
 
-Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts. If storage is blocked, the app still works for the session and says that saving is off.
+Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts plus last night's two counts. If storage is blocked, the app still works for the session and says that saving is off.
 
 ## How this was made
 

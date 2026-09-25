@@ -70,6 +70,13 @@ PRD ref: `prd.md > Goodnight`.
 "Good morning," checklist of parked thoughts (unchecked first, newest first), empty-state message, "Park new thoughts" link.
 PRD ref: `prd.md > Morning list`, `prd.md > States and Boundaries`.
 
+### Morning moments (`renderMorning`, `arriveFromSky`, `sunburst`)
+- **Falling stars:** after the Morning screen renders, each item whose star is in the sky gets a temporary fixed-position `.falling-star` at the star's on-screen position, animated with the Web Animations API to the item's checkbox; the item fades in when its star lands. Skipped under reduced motion.
+- **Check-off burst and All clear:** a `.sunburst` element (CSS conic-gradient rays) is added to the checkbox on check-off and removes itself. `body.is-all-clear` brightens `.sky-sun` and shows the All clear line when every item is done.
+- **Morning Let go:** `letGoParked(state, id)` in `store.js`; reuses the undo toast (kind `dismissed`).
+- **Last night's summary:** `state.night = { parked, released, seen }`. `recordNight(state, kind)` counts night parks and releases, starting fresh after the Morning screen has been seen; `markNightSeen` runs when Morning renders; `nightSummary(night)` builds the sentence.
+PRD ref: `prd.md > Morning moments`.
+
 ### Mode toggle and theme
 Chooses Night or Morning from `modeForHour(new Date().getHours())` on load; a small "Night / Morning" toggle in the top corner overrides it for the session and switches `data-theme`.
 PRD ref: `prd.md > Screens and Layout`.
@@ -97,12 +104,14 @@ One JSON object in `localStorage` under the key `thoughtpark:v1`:
 {
   "pending": [{ "id": "k3f9a", "text": "Email Sam about Friday", "createdAt": 1790000000000 }],
   "parked":  [{ "id": "p81xz", "text": "Pay the electric bill", "createdAt": 1790000000000, "parkedAt": 1790000100000, "done": false }],
-  "seenHint": true
+  "seenHint": true,
+  "night": { "parked": 2, "released": 1, "seen": false }
 }
 ```
 
 - `pending`: typed but not yet parked. Survives closing the app (`prd.md > States and Boundaries > Unfinished parking`).
 - `parked`: Tomorrow thoughts. `done` is set in the morning; done items are cleared on the next park.
+- `night`: only the counts of last night's parks and releases, for the morning summary.
 - Released thoughts are never written. The undo buffer and session counts live in memory only.
 - If saved data is missing or unreadable, start from the empty default.
 
