@@ -35,12 +35,84 @@ for (let i = 0; i < 45; i += 1) {
   decor.append(dot);
 }
 
+// ---- Star info tooltip ----------------------------------------------------
+
+// Lives outside the sky so it can sit above the page content.
+const tooltip = el('div', 'star-tip');
+tooltip.id = 'star-tip';
+tooltip.setAttribute('role', 'tooltip');
+tooltip.hidden = true;
+const tipText = el('p', 'star-tip-text');
+const tipMeta = el('p', 'star-tip-meta');
+tooltip.append(tipText, tipMeta);
+document.body.append(tooltip);
+
+const thoughtsById = new Map();
+let tipFor = null;
+
+function formatParkedAt(time) {
+  if (!time) return 'Parked for tomorrow';
+  const when = new Date(time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  return `Parked at ${when} · waiting for tomorrow`;
+}
+
+function showTip(star) {
+  const thought = thoughtsById.get(star.dataset.id);
+  if (!thought) return;
+  tipFor = star.dataset.id;
+  tipText.textContent = thought.text;
+  tipMeta.textContent = formatParkedAt(thought.parkedAt);
+  tooltip.hidden = false;
+  star.classList.add('is-active');
+
+  // Place it above the star, or below when the star is near the top; keep it on screen.
+  const s = star.getBoundingClientRect();
+  const t = tooltip.getBoundingClientRect();
+  const margin = 12;
+  const left = Math.min(Math.max(s.left + s.width / 2 - t.width / 2, margin), window.innerWidth - t.width - margin);
+  const above = s.top - t.height - 14;
+  const top = above > margin ? above : s.bottom + 14;
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+export function hideStarInfo() {
+  tooltip.hidden = true;
+  tipFor = null;
+  for (const star of stars.querySelectorAll('.is-active')) star.classList.remove('is-active');
+}
+
+// Mouse: hover shows the info. Touch: tap toggles it; tapping anywhere else hides it.
+stars.addEventListener('pointerover', (event) => {
+  const star = event.target.closest('.sky-star');
+  if (star && event.pointerType === 'mouse') showTip(star);
+});
+stars.addEventListener('pointerout', (event) => {
+  const star = event.target.closest('.sky-star');
+  if (star && event.pointerType === 'mouse' && !star.contains(event.relatedTarget)) hideStarInfo();
+});
+stars.addEventListener('click', (event) => {
+  const star = event.target.closest('.sky-star');
+  if (!star) return;
+  event.stopPropagation();
+  if (event.pointerType === 'mouse') return; // hover already handles the mouse
+  if (tipFor === star.dataset.id) hideStarInfo();
+  else { hideStarInfo(); showTip(star); }
+});
+document.addEventListener('click', hideStarInfo);
+window.addEventListener('resize', hideStarInfo);
+
+// ---- Stars for parked thoughts --------------------------------------------
+
 // Draw one bright star per open parked thought. New stars twinkle in;
-// stars whose thought was un-parked or checked off fade out.
+// stars whose thought was un-parked or checked off disappear.
 export function renderSky(parkedThoughts) {
-  const wanted = new Map(parkedThoughts.map((t) => [t.id, t]));
+  thoughtsById.clear();
+  for (const thought of parkedThoughts) thoughtsById.set(thought.id, thought);
+  if (tipFor && !thoughtsById.has(tipFor)) hideStarInfo();
+
   for (const star of [...stars.children]) {
-    if (!wanted.has(star.dataset.id)) star.remove();
+    if (!thoughtsById.has(star.dataset.id)) star.remove();
   }
   const existing = new Set([...stars.children].map((s) => s.dataset.id));
   for (const thought of parkedThoughts) {

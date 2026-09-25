@@ -87,6 +87,12 @@ button, textarea { font: inherit; color: inherit; }
   animation: glow 5s ease-in-out infinite;
 }
 @keyframes glow { 50% { box-shadow: 0 0 10px 4px rgba(242, 207, 122, .75), 0 0 36px 12px rgba(242, 207, 122, .3); } }
+.sky-star { pointer-events: auto; cursor: pointer; }
+/* A bigger invisible target so small stars are easy to hover or tap. */
+.sky-star::before { content: ""; position: absolute; inset: -14px; border-radius: 50%; }
+.sky-star:hover, .sky-star.is-active { transform: scale(1.6); transition: transform 250ms var(--ease); }
+body[data-theme="morning"] .sky-star { pointer-events: none; }
+
 .sky-star.is-new { animation: star-in 1200ms var(--ease) both, glow 5s ease-in-out 1200ms infinite; }
 @keyframes star-in {
   0%   { opacity: 0; transform: scale(.2); }
@@ -127,8 +133,26 @@ body[data-theme="morning"] .sky-sun { translate: -50% 0; opacity: .7; }
 body[data-theme="morning"] .sky-decor,
 body[data-theme="morning"] .sky-stars { opacity: 0; }
 
-/* Content sits above the sky. */
+/* Content sits above the sky. Empty areas of the content let the pointer
+   through, so stars behind them can still be hovered. */
 .topbar, .screen, .notice { position: relative; z-index: 1; }
+.topbar, .screen, .goodnight, .breathing { pointer-events: none; }
+.topbar > *, .screen > *:not(.goodnight):not(.breathing), .goodnight > *, .breathing > * { pointer-events: auto; }
+
+.star-tip {
+  position: fixed;
+  z-index: 5;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35), 0 0 24px var(--glow);
+  pointer-events: none;
+  animation: card-enter 200ms var(--ease) both;
+}
+.star-tip-text { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.star-tip-meta { margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
 .parked-count, .toast-area { z-index: 2; }
 
 /* Top bar */

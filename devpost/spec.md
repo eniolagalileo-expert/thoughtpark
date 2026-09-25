@@ -75,7 +75,7 @@ Chooses Night or Morning from `modeForHour(new Date().getHours())` on load; a sm
 PRD ref: `prd.md > Screens and Layout`.
 
 ### Night sky (`js/sky.js`)
-A fixed, full-screen layer behind the content (`<div id="sky">`), drawn with plain DOM elements and CSS animation, not a canvas. Holds ~40 faint decorative stars (fixed seed) and one bright star per open parked thought. Star positions come from `starPosition(id)` in `store.js`, a hash of the thought's id, so each star stays put between visits. Exposes `renderSky(parked)`, `shootingStar()`, and `sunrise()`. Hidden in the morning theme after the sunrise transition.
+A fixed, full-screen layer behind the content (`<div id="sky">`), drawn with plain DOM elements and CSS animation, not a canvas. Holds ~40 faint decorative stars (fixed seed) and one bright star per open parked thought. Star positions come from `starPosition(id)` in `store.js`, a hash of the thought's id, so each star stays put between visits. Exposes `renderSky(parked)`, `shootingStar()`, and `hideStarInfo()`; the sunrise is pure CSS driven by `body[data-theme]`. Bright stars accept pointer events (with an enlarged invisible hit area) and show a tooltip with the thought's text and parked time: hover for mouse, tap to toggle for touch. Empty areas of the page content pass pointer events through so stars behind them stay reachable. Hidden in the morning theme after the sunrise transition.
 PRD ref: `prd.md > Night sky`.
 
 ### Gentle prompts (`js/app.js` → prompt timer)

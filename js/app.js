@@ -3,7 +3,7 @@ import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, MAX_LENGTH,
 } from './store.js';
-import { renderSky, shootingStar } from './sky.js';
+import { renderSky, shootingStar, hideStarInfo } from './sky.js';
 
 const screen = document.getElementById('screen');
 const toggle = document.getElementById('mode-toggle');
@@ -88,6 +88,7 @@ function setMode(next) {
   clearUndo();
   stopPrompts();
   stopBreathing();
+  hideStarInfo();
   if (mode === 'night') renderNight();
   else renderMorning();
 }

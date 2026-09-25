@@ -72,10 +72,12 @@ Build mode: fast (learner approved)
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
-- [ ] Final kick-the-tires exploration and feedback completed
+- [ ] Final kick-the-tires exploration and feedback completed — learner tried the app and asked for star info and morning improvements; in progress
 
 ## Final Review
 
+- [x] Star info: hovering or tapping a parked star shows its thought and parked time — learner request at final review; verified on desktop (hover) and phone (tap), all slice checks re-run.
+- [ ] Morning: more animation and a new idea — learner request at final review; proposal pending learner approval.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -94,3 +96,4 @@ Activity mode:
 
 - Added slices 4 (night sky and gentle prompts) and 5 (breathing moment); polish became slice 6 — at the first checkpoint the learner asked to improve the idea and approved three additions, recorded in `scope.md`, `prd.md`, and `spec.md`.
 - Undo restores a saved copy of the state from just before the action instead of a `restore()` helper, and is verified in the browser rather than a unit test — this reverses the action exactly, including checked-off morning items that parking clears.
+- The sunrise is driven by CSS on the theme change rather than a `sunrise()` function in `sky.js` — a CSS transition on `body[data-theme]` was simpler and already plays whenever the mode changes.

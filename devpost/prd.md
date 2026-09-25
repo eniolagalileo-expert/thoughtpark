@@ -65,6 +65,7 @@ Added after the first checkpoint at the learner's request (Innovation, Design).
   - [ ] Parking a thought adds its star with a gentle twinkle-in; the star keeps the same position every time the app opens.
   - [ ] Letting a thought go sends a shooting star across the sky that disappears.
   - [ ] Undo restores the sky to match (the star returns or disappears).
+  - [ ] Hovering a star with the mouse (or tapping it on a phone) shows that thought's text and when it was parked; moving away or tapping elsewhere hides it. (Added at the learner's request during final review.)
   - [ ] Switching to Morning plays a short sunrise: the sky warms and the stars fade as the checklist appears.
   - [ ] With reduced motion, stars appear and disappear without movement.
 
