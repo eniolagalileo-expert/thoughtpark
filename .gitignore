@@ -1,0 +1,11 @@
+# Personal learning context (Devpost Learn)
+/devpost/learner-profile.md
+
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# OS / tooling
+.DS_Store
+node_modules/
