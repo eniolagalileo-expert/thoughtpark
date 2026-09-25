@@ -9,7 +9,7 @@ Build mode: fast (learner approved)
 
 ## Slices
 
-- [ ] **1. You can type thoughts at night and park or release each one**
+- [x] **1. You can type thoughts at night and park or release each one**
   Becomes usable: The Night screen runs in the browser: type a thought, it appears as a card, tap "Let it go" and it fades and drifts away, tap "Tomorrow" and the parked counter goes up.
   Why now: This is the kernel (`scope.md > The Unique Kernel`). Building it first proves the core feeling before anything else, and it includes the scaffold, the data logic, and its tests.
   PRD ref: `prd.md > The Core Journey` (steps 1–5), `prd.md > Adding thoughts`, `prd.md > Parking thoughts (the kernel)`

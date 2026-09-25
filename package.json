@@ -1,0 +1,12 @@
+{
+  "name": "thoughtpark",
+  "version": "0.1.0",
+  "description": "A bedtime brain dump that parks your racing thoughts for the night and hands them back in the morning.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve .",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
