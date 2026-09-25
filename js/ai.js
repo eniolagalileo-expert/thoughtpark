@@ -194,6 +194,46 @@ export async function morningPlan(items) {
   return { opener: plan.opener, steps: plan.steps.filter((s) => known.has(s.id)) };
 }
 
+// ---- Dream reflection -------------------------------------------------------
+
+const DREAM_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    feelings: { type: 'array', items: { type: 'string' } },
+    themes: { type: 'array', items: { type: 'string' } },
+    reflection: { type: 'string' },
+    connection: { type: 'string' },
+    question: { type: 'string' },
+  },
+  required: ['title', 'feelings', 'themes', 'reflection', 'connection', 'question'],
+  additionalProperties: false,
+};
+
+const DREAM_SYSTEM = `You help someone reflect on a dream they just wrote down after waking. Dreams have no fixed hidden meanings, so never claim to know what a dream "means", never use symbol dictionaries, never predict the future, and never diagnose. Be warm, curious, and grounded.
+
+Return:
+- title: a gentle title for the dream, at most 6 words.
+- feelings: one to three feelings the dream seems to carry, one or two words each.
+- themes: one to three themes, one to three words each.
+- reflection: two or three short sentences of grounded observation — what stands out, and how dreams often replay recent concerns, memories, and emotions.
+- connection: if the dream clearly echoes one of the thoughts they parked last night, name it in one sentence; otherwise an empty string. Don't force a link.
+- question: one open, kind question they could think about today.
+
+If the dream suggests they may want to harm themselves, set reflection to a caring note encouraging them to call or text 988 (Suicide & Crisis Lifeline, US).`;
+
+// Reflect on a dream. `thoughts` are last night's open parked thoughts, used
+// only to notice echoes.
+export async function analyzeDream({ dream, thoughts }) {
+  if (isDemo()) return demoDream(dream, thoughts);
+  const list = thoughts.length ? thoughts.map((t) => `- ${t.text}`).join('\n') : '(none)';
+  return structured({
+    system: DREAM_SYSTEM,
+    content: `My dream:\n${dream}\n\nThoughts I parked last night:\n${list}`,
+    schema: DREAM_SCHEMA,
+  });
+}
+
 // ---- Sleep story --------------------------------------------------------------
 
 const STORY_SYSTEM = `You write sleep stories: slow, gentle, deliberately uneventful stories that help a listener drift off. Second person ("you"), present tense, about 350 words. Nothing happens that could create suspense, surprise, conflict, or strong emotion. Linger on soft sensory details: warm light, quiet sounds, textures, slow breathing, repetition. Sentences get a little shorter and slower toward the end, which fades into rest. Plain text only, no title, no headings.`;
@@ -267,6 +307,19 @@ function demoNote(thought) {
   if (kind === 'worry') return 'Most of this is out of my hands; tomorrow I’ll handle my part.';
   if (kind === 'regret') return 'Nobody remembers it like I do. It can go.';
   return 'First step tomorrow: five minutes, just to start.';
+}
+
+function demoDream(dream, thoughts) {
+  const words = new Set(dream.toLowerCase().match(/[a-z']{4,}/g) ?? []);
+  const echo = thoughts.find((t) => (t.text.toLowerCase().match(/[a-z']{4,}/g) ?? []).some((w) => words.has(w)));
+  return {
+    title: 'A night of loose ends',
+    feelings: ['curious', 'unsettled'],
+    themes: ['unfinished business'],
+    reflection: 'This is a sample reflection. Dreams often stitch together bits of recent days, and the feeling you woke up with is usually the most useful clue.',
+    connection: echo ? `It may echo a thought you parked last night: “${echo.text}”.` : '',
+    question: 'What feeling from the dream is still with you this morning?',
+  };
 }
 
 function demoPlan(items) {

@@ -146,6 +146,17 @@ Added at the learner's request during final review; learner approved features 1,
 - Claude's instructions also say to point to 988 if risk appears in conversation.
   - [ ] Crisis wording always shows the 988 card and never calls the API.
 
+### Dream journal
+Added at the learner's request during final review ("In the Morning section, there should be note dream at last night. Also the claude can analyze that dream.").
+- **Note a dream.** At the top of the Morning screen, "☾ Note last night's dream" opens a text box (with a microphone button where the browser supports speech). Saving keeps the dream on this device, one per morning; it can be edited or deleted.
+  - [ ] A saved dream shows on the Morning screen and survives reloading; Delete removes it for good.
+- **Reflect with Claude.** "✦ Reflect with Claude" sends the dream and the thoughts parked last night and shows a short reflection: a title, the feelings and themes noticed, two or three sentences of grounded observation, any clear echo of last night's parked thoughts, and one gentle question. The reflection is saved with the dream.
+  - Claude is told that dreams have no fixed hidden meanings: no symbol dictionaries, no predictions, no diagnosis.
+  - [ ] The request contains the dream and last night's open parked thoughts only; the reflection shows and survives reloading.
+  - [ ] Crisis wording in a dream shows the 988 card and sends nothing.
+  - [ ] Demo mode shows a labeled sample reflection with no network call; API errors show a plain message.
+- **Dream journal.** Earlier dreams are listed under "Dream journal (N)" with their dates and reflection titles; the newest 60 are kept.
+
 ### Help me fall asleep
 Added at the learner's request during final review ("You can add an idea which the service can help to fall asleep easily"); the learner asked the agent to choose. The Goodnight screen offers four tools under "Help me fall asleep": Breathe (the existing minute), Mind shuffle, Sleep sounds, and Sleep story.
 
@@ -163,7 +174,7 @@ Added at the learner's request during final review ("You can add an idea which t
 - **Nothing to park yet:** the Night screen shows only the text box and the hint.
 - **Morning with nothing parked:** "Nothing was parked. Clear mind, clear day." and a link to the Night screen.
 - **Unfinished parking:** if the user closes the app with unparked cards, they're still there next time on the Night screen (proposed).
-- **Persistence:** parked thoughts, checked state, unparked cards, and last night's two counts are saved on this device and survive closing and reopening the browser. "Let it go" thoughts are never saved.
+- **Persistence:** parked thoughts, checked state, unparked cards, dreams and their reflections, and last night's two counts are saved on this device and survive closing and reopening the browser. "Let it go" thoughts are never saved.
 - **Boundary:** one person, one device. No accounts, no sharing. AI features use the user's own API key; the app has no server.
 
 ## Product Decisions

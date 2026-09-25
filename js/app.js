@@ -7,6 +7,7 @@ import {
 import { openTalk, openSettings, showCrisis } from './companion.js';
 import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
 import { openGuide } from './guide.js';
+import { dreamSection } from './dreams.js';
 import { startShuffle, startSounds, startStory, stopSleepTools } from './sleep.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -546,6 +547,12 @@ function renderMorning({ animate = true } = {}) {
   if (summaryText) {
     header.push(el('p', { className: 'morning-summary', id: 'morning-summary', textContent: summaryText }));
   }
+  header.push(dreamSection({
+    getState: () => state,
+    commit,
+    openThoughts: () => morningList(state).filter((t) => !t.done),
+    onCrisis: showCrisis,
+  }));
 
   if (items.length === 0) {
     document.body.classList.remove('is-all-clear');

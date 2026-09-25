@@ -44,6 +44,7 @@ ThoughtPark turns that into a calm nightly ritual. You don't only write thoughts
   - **Sleep story (AI):** pick a setting (a lighthouse, a night train, a snowy cabin, a quiet garden) and Claude writes a slow, deliberately uneventful story that your device reads aloud. Only the setting is sent.
   Each tool ends by dimming the screen to near-black.
 - **Morning handoff.** At sunrise each star falls from the sky into your checklist, and a line sums up your night: "Last night you parked 3 thoughts and let go of 2. You slept on it." (Only the counts are kept.)
+- **Dream journal (AI).** Note last night's dream before it fades (typed or spoken). **Reflect with Claude** gives a gentle title, the feelings and themes it notices, a short grounded reflection, any echo of the thoughts you parked last night, and one question for the day. Claude is told dreams have no fixed hidden meanings, so there are no symbol dictionaries and no predictions. Past dreams are kept in a journal on your device.
 - **Does it still matter?** Worries often look smaller in the morning. Check an item off (a small burst of sun rays) or let it go if it doesn't matter anymore, and watch it shimmer like a rainbow and burst into sparkles. When everything is done: "All clear. Have a good day." 
 - **Forgiving.** Every park or release can be undone for 5 seconds, which helps with half-asleep taps.
 - **Private by design.** No account and no server. Everything stays in your browser on your device, and released thoughts are never stored. The AI features use your own Anthropic API key (Settings, the ✦ button); only the thoughts you choose to talk through, speak, or plan are sent to Claude.
@@ -88,11 +89,12 @@ Plain HTML, CSS, and JavaScript with no framework and no build step. The only ru
 | `js/ai.js` | Claude calls: streamed Talk it through, notes, voice splitting, morning plan (structured JSON outputs), demo mode, key storage |
 | `js/companion.js` | The Talk it through, Settings, and 988 support panels |
 | `js/guide.js` | The four-step welcome guide for first-time visitors |
+| `js/dreams.js` | The morning dream card: note (typed or spoken), reflect with Claude, edit, delete, and the dream journal |
 | `js/sleep.js` | Help me fall asleep: mind shuffle, sleep sounds, sleep story (read aloud with the browser's voice) |
 | `js/sounds.js` | Rain, ocean, and brown noise generated with the Web Audio API |
-| `tests/store.test.js` | 34 unit tests for `store.js` using Node's built-in test runner |
+| `tests/store.test.js` | 38 unit tests for `store.js` using Node's built-in test runner |
 
-Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts (with any notes) plus last night's two counts. The API key is stored separately under `thoughtpark:apiKey`; conversations are never saved.
+Data is one JSON object in `localStorage` under `thoughtpark:v1`, holding pending and parked thoughts (with any notes), dreams and their reflections, and last night's two counts. The API key is stored separately under `thoughtpark:apiKey`; conversations are never saved.
 
 **Claude details:** model `claude-opus-5` at low effort for short, quick replies; chat replies stream word by word; notes, voice splitting, and plans use structured JSON outputs; requests opt into Anthropic's server-side refusal fallback. The browser talks to the API directly with the user's own key (`dangerouslyAllowBrowser`), which is appropriate here because the key never belongs to anyone else. A hosted version for the public would move the key to a small server. If storage is blocked, the app still works for the session and says that saving is off.
 

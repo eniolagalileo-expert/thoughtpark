@@ -5,7 +5,7 @@ export const MAX_LENGTH = 280;
 export const STORAGE_KEY = 'thoughtpark:v1';
 
 export function emptyState() {
-  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight() };
+  return { pending: [], parked: [], seenHint: false, seenGuide: false, night: emptyNight(), dreams: [] };
 }
 
 // Only counts are kept about last night, never the released text.
@@ -133,6 +133,7 @@ export function parseState(raw) {
       seenHint: Boolean(data.seenHint),
       seenGuide: Boolean(data.seenGuide),
       night: parseNight(data.night),
+      dreams: parseDreams(data.dreams),
     };
   } catch {
     return emptyState();
@@ -315,4 +316,78 @@ export function shuffleSequence(word, perLetter = 3) {
     for (const item of items.slice(0, perLetter)) steps.push({ letter, item });
   }
   return steps;
+}
+
+// ---- Dream journal --------------------------------------------------------
+
+export const MAX_DREAM_LENGTH = 2000;
+export const MAX_DREAMS = 60;
+
+// Dreams keep their line breaks, unlike thoughts.
+export function cleanDream(text) {
+  const clean = String(text ?? '').replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  return clean ? clean.slice(0, MAX_DREAM_LENGTH) : null;
+}
+
+function sameDay(a, b) {
+  const x = new Date(a);
+  const y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
+
+// The dream noted on the same calendar day as `now`, if any.
+export function dreamForDay(state, now = Date.now()) {
+  return (state.dreams ?? []).find((d) => sameDay(d.createdAt, now)) ?? null;
+}
+
+export function addDream(state, text, now = Date.now()) {
+  const clean = cleanDream(text);
+  if (!clean) return { state, dream: null };
+  const dream = { id: makeId(), text: clean, createdAt: now };
+  return { state: { ...state, dreams: [dream, ...(state.dreams ?? [])].slice(0, MAX_DREAMS) }, dream };
+}
+
+// Editing a dream clears its old reflection, which no longer fits.
+export function updateDream(state, id, text) {
+  const clean = cleanDream(text);
+  if (!clean) return state;
+  return {
+    ...state,
+    dreams: (state.dreams ?? []).map((d) => (d.id === id ? { id: d.id, text: clean, createdAt: d.createdAt } : d)),
+  };
+}
+
+export function deleteDream(state, id) {
+  return { ...state, dreams: (state.dreams ?? []).filter((d) => d.id !== id) };
+}
+
+export function setDreamReflection(state, id, reflection) {
+  return { ...state, dreams: (state.dreams ?? []).map((d) => (d.id === id ? { ...d, reflection } : d)) };
+}
+
+function isReflection(r) {
+  return r && typeof r === 'object' && typeof r.title === 'string' && typeof r.reflection === 'string';
+}
+
+function parseDreams(dreams) {
+  if (!Array.isArray(dreams)) return [];
+  return dreams
+    .filter((d) => d && typeof d.id === 'string' && typeof d.text === 'string' && Number.isFinite(d.createdAt))
+    .map((d) => {
+      const dream = { id: d.id, text: d.text.slice(0, MAX_DREAM_LENGTH), createdAt: d.createdAt };
+      if (isReflection(d.reflection)) {
+        const r = d.reflection;
+        const strings = (list) => (Array.isArray(list) ? list.filter((x) => typeof x === 'string').slice(0, 4) : []);
+        dream.reflection = {
+          title: r.title,
+          feelings: strings(r.feelings),
+          themes: strings(r.themes),
+          reflection: r.reflection,
+          connection: typeof r.connection === 'string' ? r.connection : '',
+          question: typeof r.question === 'string' ? r.question : '',
+        };
+      }
+      return dream;
+    })
+    .slice(0, MAX_DREAMS);
 }

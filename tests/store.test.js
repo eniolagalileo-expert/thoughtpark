@@ -6,6 +6,7 @@ import {
   starPosition, hashString, promptAt, PROMPTS, breathPhase,
   letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote, splitLocally,
   shuffleSequence, SHUFFLE_WORDS, SHUFFLE_ITEMS,
+  addDream, updateDream, deleteDream, setDreamReflection, dreamForDay, cleanDream, MAX_DREAMS,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -312,4 +313,46 @@ test('shuffleSequence walks the word letter by letter', () => {
   assert.deepEqual(steps.map((s) => s.letter), ['B', 'B', 'E', 'E', 'E', 'E']);
   assert.equal(steps[0].item, 'a bicycle');
   assert.deepEqual(shuffleSequence('xyz'), []);
+});
+
+// ---- Dream journal -------------------------------------------------------
+
+const MORNING = new Date(2026, 8, 25, 7, 30).getTime();
+const REFLECTION = { title: 'The long train', feelings: ['calm'], themes: ['travel'], reflection: 'A quiet journey.', connection: '', question: 'Where were you going?' };
+
+test('a dream is noted for the day and found again', () => {
+  const { state, dream } = addDream(emptyState(), '  I was on a train\n\n\n\nby the sea  ', MORNING);
+  assert.equal(dream.text, 'I was on a train\n\nby the sea');
+  assert.equal(dreamForDay(state, MORNING + 3 * 3600e3).id, dream.id);
+  assert.equal(dreamForDay(state, MORNING + 24 * 3600e3), null);
+  assert.equal(addDream(emptyState(), '   ').dream, null);
+  assert.equal(cleanDream('x'.repeat(5000)).length, 2000);
+});
+
+test('editing a dream clears its reflection; deleting removes it', () => {
+  let { state, dream } = addDream(emptyState(), 'Flying over a city', MORNING);
+  state = setDreamReflection(state, dream.id, REFLECTION);
+  assert.equal(state.dreams[0].reflection.title, 'The long train');
+  state = updateDream(state, dream.id, 'Flying over a small town');
+  assert.equal(state.dreams[0].text, 'Flying over a small town');
+  assert.equal('reflection' in state.dreams[0], false);
+  assert.equal(deleteDream(state, dream.id).dreams.length, 0);
+});
+
+test('only the newest dreams are kept', () => {
+  let state = emptyState();
+  for (let i = 0; i < MAX_DREAMS + 5; i += 1) state = addDream(state, `dream ${i}`, MORNING + i).state;
+  assert.equal(state.dreams.length, MAX_DREAMS);
+  assert.equal(state.dreams[0].text, `dream ${MAX_DREAMS + 4}`);
+});
+
+test('dreams and reflections survive saving; bad data is dropped', () => {
+  const storage = memoryStorage();
+  let { state, dream } = addDream(emptyState(), 'A garden at night', MORNING);
+  state = setDreamReflection(state, dream.id, REFLECTION);
+  save(storage, state);
+  assert.deepEqual(load(storage).dreams[0].reflection, REFLECTION);
+  const parsed = parseState(JSON.stringify({ dreams: [{ id: 'a', text: 't', createdAt: 1, reflection: { title: 5 } }, { id: 'b' }, 'x'] }));
+  assert.equal(parsed.dreams.length, 1);
+  assert.equal('reflection' in parsed.dreams[0], false);
 });

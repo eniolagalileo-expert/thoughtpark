@@ -109,6 +109,16 @@ Build mode: fast (learner approved)
   Learner check: Park your last thought, then try each tool for a few seconds.
   Commit: `Add Help me fall asleep: mind shuffle, sleep sounds, sleep story`
 
+- [x] **11. Note last night's dream and reflect on it with Claude**
+  Becomes usable: The Morning screen has a dream card: note a dream (typed or spoken), reflect with Claude, edit or delete it, and browse the dream journal.
+  Why now: Learner request at final review; builds on the morning screen and AI client.
+  PRD ref: `prd.md > Dream journal`
+  Spec ref: `spec.md > Dream journal (js/dreams.js)`
+  Build: dream helpers in `store.js`; `analyzeDream` in `ai.js`; `js/dreams.js`; card placed under the morning summary.
+  Verify (mechanical): unit tests for the dream helpers and parsing; headless browser with intercepted API: save, reload, reflect (request has the dream and open parked thoughts, structured schema), reflection renders and persists, crisis wording shows 988 without a request, demo mode, 401 message, edit, delete, journal list.
+  Learner check: In the morning, note a dream and press Reflect with Claude.
+  Commit: `Add dream journal with Claude reflections`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
@@ -144,3 +154,4 @@ Activity mode:
 - On the Goodnight and Breathing screens the sky layer now sits above the text (buttons stay on top), and star positions start below the header — found while verifying star info: stars behind text or the header couldn't be hovered.
 - Added slices 7–9 (AI companion) after the learner asked for a richer idea at final review; recorded in `scope.md`, `prd.md`, and `spec.md`. This reverses the earlier "no AI" decision at the learner's request.
 - Added slice 10 (Help me fall asleep) at the learner's request during final review; the learner asked the agent to choose the idea.
+- Added slice 11 (dream journal) at the learner's request during final review.

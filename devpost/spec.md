@@ -119,6 +119,10 @@ PRD ref: `prd.md > AI companion`.
 A four-step `<dialog>` guide with Back / Next / Skip and step dots, opened on load when `state.seenGuide` is false and from "How it works" links. Closing it by any means sets `seenGuide: true`.
 PRD ref: `prd.md > States and Boundaries` (First visit guide).
 
+### Dream journal (`js/dreams.js`)
+The Morning screen's dream card: collapsed button, text box with optional dictation, saved view with Reflect / Edit / Delete, the reflection card, and the past-dreams list. Data helpers in `store.js` (tested): `addDream`, `updateDream`, `deleteDream`, `setDreamReflection`, `dreamForDay`; dreams are `{ id, text, createdAt, reflection? }` in `state.dreams`, newest first, capped at 60. `analyzeDream({ dream, thoughts })` in `ai.js` returns structured JSON `{ title, feelings[], themes[], reflection, connection, question }`.
+PRD ref: `prd.md > Dream journal`.
+
 ### Sleep tools (`js/sleep.js`, `js/sounds.js`)
 - `sleep.js`: full-screen views for Mind shuffle, Sleep sounds, and Sleep story, sharing Stop and the dim end screen with the breathing moment. Mind shuffle uses `shuffleSequence(word)` from `store.js` (pure, tested) with a built-in list of calm nouns per letter.
 - `sounds.js`: Web Audio API. One looping noise buffer (white, or brown by integration) through filters and gain: rain = band-passed white noise with random short "drop" bursts; ocean = low-passed brown noise with a slow gain wave; brown noise = brown noise. A master gain ramps down over 20 seconds when the timer ends.
@@ -137,7 +141,8 @@ One JSON object in `localStorage` under the key `thoughtpark:v1`:
   "pending": [{ "id": "k3f9a", "text": "Email Sam about Friday", "createdAt": 1790000000000 }],
   "parked":  [{ "id": "p81xz", "text": "Pay the electric bill", "createdAt": 1790000000000, "parkedAt": 1790000100000, "done": false }],
   "seenHint": true,
-  "night": { "parked": 2, "released": 1, "seen": false }
+  "night": { "parked": 2, "released": 1, "seen": false },
+  "dreams": [{ "id": "d1x", "text": "I was on a train…", "createdAt": 1790000200000, "reflection": { "title": "The long train", "feelings": ["calm"], "themes": ["travel"], "reflection": "…", "connection": "", "question": "…" } }]
 }
 ```
 
@@ -160,6 +165,7 @@ build-with-ai/
 │   ├── ai.js           # Claude calls (talk, note, split, plan), demo mode, key storage
 │   ├── companion.js    # Talk it through, Settings, and 988 panels
 │   ├── guide.js        # First-visit welcome guide
+│   ├── dreams.js       # Morning dream card, reflection, and journal
 │   ├── sleep.js        # Help me fall asleep: mind shuffle, sleep sounds, sleep story
 │   ├── sounds.js       # Generated rain, ocean, and brown noise (Web Audio)
 │   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing
