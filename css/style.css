@@ -601,6 +601,29 @@ body[data-theme="morning"] .check-note, body[data-theme="morning"] .card-note { 
   .icon-button { width: 36px; height: 36px; }
 }
 
+/* Morning plan */
+.plan-button { margin: 0 0 16px; }
+.plan-button[hidden] { display: none; }
+body[data-theme="morning"] .talk-button { color: #8a5d0c; border-color: rgba(217, 164, 65, .5); }
+.plan-card {
+  margin: 0 0 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 6px 24px var(--glow);
+  animation: card-enter 500ms var(--ease) both;
+}
+.plan-card[hidden] { display: none; }
+.plan-title { margin: 0 0 6px; font-size: 1.1rem; }
+.plan-opener { margin: 0 0 10px; color: var(--muted); }
+.plan-steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+.plan-steps li::marker { color: var(--accent); font-weight: 700; }
+.plan-action { display: block; font-weight: 600; }
+.plan-thought { display: block; font-size: .8rem; color: var(--muted); }
+.plan-demo, .plan-loading, .plan-error { margin: 8px 0 0; font-size: .85rem; color: var(--muted); }
+.plan-loading { margin: 0; animation: typing 1.2s ease-in-out infinite; }
+
 /* Microphone */
 .mic-button {
   flex: none;
@@ -849,7 +872,7 @@ body[data-theme="morning"] .check-note, body[data-theme="morning"] .card-note { 
   .sky-sun-disc::before { animation: none; }
   .breath-circle { transform: scale(.8); }
   .checklist li.is-arriving, .checklist li.is-arriving .check-box, .all-clear.is-fresh { animation: none; }
-  .sheet[open], .bubble, .talk-save.is-ready, .mic-button.is-listening { animation: none; }
+  .sheet[open], .bubble, .talk-save.is-ready, .mic-button.is-listening, .plan-card, .plan-loading { animation: none; }
   :root { --morning-release-ms: 300ms; }
   @keyframes morning-release { to { opacity: 0; } }
   .morning-item.is-releasing .check-item::after { animation: none; opacity: 0; }

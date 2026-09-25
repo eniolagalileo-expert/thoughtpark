@@ -89,7 +89,7 @@ Build mode: fast (learner approved)
   Learner check: Press the microphone, say three things on your mind, and see three cards.
   Commit: `Add voice input for thoughts`
 
-- [ ] **9. A morning plan from Claude**
+- [x] **9. A morning plan from Claude**
   Becomes usable: "Make my morning plan" turns open morning thoughts into a short ordered plan.
   Why now: Uses the AI client and the morning list.
   PRD ref: `prd.md > AI companion` (Morning plan)
@@ -110,7 +110,7 @@ Build mode: fast (learner approved)
 - [x] Morning moments: stars fall into the list, check-off burst and All clear, morning Let go, last night's summary — learner request at final review; learner approved all four. Verified: 20 browser checks (normal and reduced motion), 4 new unit tests, all earlier checks re-run.
 - [x] Moon at night, sun in the morning, and a visible morning Let go animation — learner feedback ("In the morning, there should be a sun… even I click let it go, I can't see any animation. In the night, there should be a moon"). The Let go bug: the arrival animation rule overrode the release animation; fixed with a more specific selector and verified by reading the running animation name.
 - [x] Morning Let go shines: rainbow shimmer across the card plus a burst of rainbow sparkles as it fades — learner request ("it should be shine as a rainbow or spark or sun ray"); verified sparkles appear and clean up, shimmer and release animations run, reduced motion falls back to a fade.
-- [ ] AI companion (slices 7–9) — learner asked for a richer idea with LLM chat; approved Talk it through, voice, morning plan, and safety.
+- [x] AI companion (slices 7–9) — learner asked for a richer idea with LLM chat; approved Talk it through, voice, morning plan, and safety. Verified against an intercepted API (request shape, streaming, errors, crisis handling, demo mode); not yet run against the live API because no key was available to the agent.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

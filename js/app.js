@@ -5,7 +5,7 @@ import {
   setNote, crisisCheck, splitLocally, MAX_LENGTH,
 } from './store.js';
 import { openTalk, openSettings, showCrisis } from './companion.js';
-import { splitThoughts, friendlyError } from './ai.js';
+import { splitThoughts, morningPlan, friendlyError, isDemo } from './ai.js';
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -533,12 +533,23 @@ function renderMorning({ animate = true } = {}) {
     'All clear. Have a good day.',
   ]);
 
+  const planButton = el('button', { type: 'button', className: 'talk-button plan-button', id: 'plan-button' }, [
+    el('span', { className: 'talk-icon', textContent: '✦' }),
+    'Make my morning plan',
+  ]);
+  const planCard = el('section', { className: 'plan-card', id: 'plan-card', hidden: true });
+  planCard.setAttribute('aria-live', 'polite');
+  planButton.addEventListener('click', () => makePlan(planButton, planCard));
+  planButton.hidden = !items.some((t) => !t.done);
+
   screen.replaceChildren(
     ...header,
     el('p', {
       className: 'screen-sub',
       textContent: 'Here’s what you parked last night. Done with one, or it doesn’t matter anymore? Check it off or let it go.',
     }),
+    planButton,
+    planCard,
     allClear,
     list,
     toNight,
@@ -610,6 +621,39 @@ function renderMorningList() {
   if (focusedId) list.querySelector(`li[data-id="${focusedId}"] .check-item`)?.focus();
 }
 
+// ---- Morning plan -----------------------------------------------------------
+
+async function makePlan(button, card) {
+  const open = morningList(state).filter((t) => !t.done);
+  if (open.length === 0) return;
+  if (open.some((t) => crisisCheck(`${t.text} ${t.note ?? ''}`))) {
+    showCrisis();
+    return;
+  }
+  button.disabled = true;
+  card.hidden = false;
+  card.replaceChildren(el('p', { className: 'plan-loading', textContent: 'Making your plan…' }));
+  try {
+    const plan = await morningPlan(open);
+    if (!card.isConnected) return;
+    const byId = new Map(open.map((t) => [t.id, t]));
+    card.replaceChildren(
+      el('h2', { className: 'plan-title', textContent: 'Your morning plan' }),
+      el('p', { className: 'plan-opener', textContent: plan.opener }),
+      el('ol', { className: 'plan-steps' }, plan.steps.map((step) => el('li', {}, [
+        el('span', { className: 'plan-action', textContent: step.action }),
+        el('span', { className: 'plan-thought', textContent: byId.get(step.id)?.text ?? '' }),
+      ]))),
+      ...(isDemo() ? [el('p', { className: 'plan-demo', textContent: 'Demo plan. Add your API key in Settings for a plan from Claude.' })] : []),
+    );
+    button.lastChild.textContent = 'Make a new plan';
+  } catch (error) {
+    card.replaceChildren(el('p', { className: 'plan-error', textContent: friendlyError(error) }));
+  } finally {
+    button.disabled = false;
+  }
+}
+
 // "All clear" shows only when every item is checked; the sun glows brighter.
 function updateAllClear(celebrate) {
   const allClear = document.getElementById('all-clear');
@@ -619,6 +663,8 @@ function updateAllClear(celebrate) {
   const wasHidden = allClear.hidden;
   allClear.hidden = !done;
   document.body.classList.toggle('is-all-clear', done);
+  const planButton = document.getElementById('plan-button');
+  if (planButton) planButton.hidden = !items.some((t) => !t.done);
   if (celebrate && done && wasHidden) {
     allClear.classList.remove('is-fresh');
     void allClear.offsetWidth; // restart the animation
