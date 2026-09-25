@@ -46,8 +46,9 @@ tooltip.id = 'star-tip';
 tooltip.setAttribute('role', 'tooltip');
 tooltip.hidden = true;
 const tipText = el('p', 'star-tip-text');
+const tipNote = el('p', 'star-tip-note');
 const tipMeta = el('p', 'star-tip-meta');
-tooltip.append(tipText, tipMeta);
+tooltip.append(tipText, tipNote, tipMeta);
 document.body.append(tooltip);
 
 const thoughtsById = new Map();
@@ -64,6 +65,8 @@ function showTip(star) {
   if (!thought) return;
   tipFor = star.dataset.id;
   tipText.textContent = thought.text;
+  tipNote.textContent = thought.note ? `✦ ${thought.note}` : '';
+  tipNote.hidden = !thought.note;
   tipMeta.textContent = formatParkedAt(thought.parkedAt);
   tooltip.hidden = false;
   star.classList.add('is-active');

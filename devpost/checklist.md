@@ -69,7 +69,7 @@ Build mode: fast (learner approved)
   Learner check: Open the app on your phone-sized window and desktop, try the whole night-to-morning journey, and say what you'd change.
   Commit: `Polish design, add README and license`
 
-- [ ] **7. Talk any thought through with Claude, safely**
+- [x] **7. Talk any thought through with Claude, safely**
   Becomes usable: A settings panel for your own API key (or demo mode); a "Talk" button on night cards and morning items opens a calm streamed chat that ends with "Park with this note"; crisis wording shows the 988 card instead.
   Why now: The learner's main request; the safety check must ship with the first AI feature.
   PRD ref: `prd.md > AI companion`

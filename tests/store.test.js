@@ -4,7 +4,7 @@ import {
   emptyState, cleanText, addThought, releaseThought, parkThought, MAX_LENGTH,
   toggleDone, clearDone, morningList, modeForHour, parseState, load, save, STORAGE_KEY,
   starPosition, hashString, promptAt, PROMPTS, breathPhase,
-  letGoParked, recordNight, markNightSeen, nightSummary,
+  letGoParked, recordNight, markNightSeen, nightSummary, crisisCheck, setNote,
 } from '../js/store.js';
 
 test('cleanText trims, collapses whitespace, and rejects empty input', () => {
@@ -229,4 +229,46 @@ test('night counts survive saving and bad values are cleaned', () => {
   save(storage, recordNight(emptyState(), 'parked'));
   assert.deepEqual(load(storage).night, { parked: 1, released: 0, seen: false });
   assert.deepEqual(parseState('{"night":{"parked":-4,"released":"x"}}').night, { parked: 0, released: 0, seen: false });
+});
+
+// ---- AI companion --------------------------------------------------------
+
+test('crisisCheck catches signs of crisis', () => {
+  for (const text of [
+    'I want to kill myself', 'sometimes I feel suicidal', 'I just want to die',
+    "I don't want to wake up tomorrow", 'I don’t want to live anymore', 'thinking about hurting myself',
+    'self-harm again', 'everyone would be better off dead without me', 'I want to end it all',
+  ]) assert.equal(crisisCheck(text), true, text);
+});
+
+test('crisisCheck ignores everyday worries', () => {
+  for (const text of [
+    'Pay the electric bill', 'The presentation might kill me lol', 'My phone battery died',
+    'I hurt my knee at the gym', 'Deadline is killing me', 'Die Hard is on tonight', '',
+  ]) assert.equal(crisisCheck(text), false, text);
+  assert.equal(crisisCheck(undefined), false);
+});
+
+test('setNote adds, replaces, and removes a note on pending and parked thoughts', () => {
+  let state = withParked('parked one');
+  state = addThought(state, 'pending one').state;
+  const parkedId = state.parked[0].id;
+  const pendingId = state.pending[0].id;
+  state = setNote(state, parkedId, '  First step: open the form  ');
+  state = setNote(state, pendingId, 'Talk to Sam at lunch');
+  assert.equal(state.parked[0].note, 'First step: open the form');
+  assert.equal(state.pending[0].note, 'Talk to Sam at lunch');
+  state = setNote(state, parkedId, '   ');
+  assert.equal('note' in state.parked[0], false);
+  assert.equal(setNote(state, pendingId, 'x'.repeat(500)).pending[0].note.length, 160);
+});
+
+test('notes survive saving and parking', () => {
+  const storage = memoryStorage();
+  let { state, thought } = addThought(emptyState(), 'Renew passport');
+  state = setNote(state, thought.id, 'Check the form online');
+  state = parkThought(state, thought.id).state;
+  save(storage, state);
+  assert.equal(load(storage).parked[0].note, 'Check the form online');
+  assert.equal(parseState('{"parked":[{"id":"a","text":"t","note":42}]}').parked[0].note, undefined);
 });

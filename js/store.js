@@ -114,15 +114,21 @@ function isThought(t) {
   return t && typeof t.id === 'string' && typeof t.text === 'string';
 }
 
+// Keep a saved note only if it's a short string.
+function withValidNote(t) {
+  const { note, ...rest } = t;
+  return typeof note === 'string' && note.trim() ? { ...rest, note: note.slice(0, 160) } : rest;
+}
+
 // Accepts anything read from storage and returns a valid state.
 export function parseState(raw) {
   try {
     const data = JSON.parse(raw);
     if (!data || typeof data !== 'object') return emptyState();
     return {
-      pending: Array.isArray(data.pending) ? data.pending.filter(isThought) : [],
+      pending: Array.isArray(data.pending) ? data.pending.filter(isThought).map(withValidNote) : [],
       parked: Array.isArray(data.parked)
-        ? data.parked.filter(isThought).map((t) => ({ ...t, done: Boolean(t.done) }))
+        ? data.parked.filter(isThought).map((t) => ({ ...withValidNote(t), done: Boolean(t.done) }))
         : [],
       seenHint: Boolean(data.seenHint),
       night: parseNight(data.night),
@@ -222,4 +228,39 @@ export function breathPhase(elapsedMs) {
     progress: breathingIn ? inCycle / BREATH_IN_MS : (inCycle - BREATH_IN_MS) / BREATH_OUT_MS,
     remainingSec: Math.ceil((BREATH_TOTAL_MS - elapsed) / 1000),
   };
+}
+
+// ---- AI companion ---------------------------------------------------------
+
+// Signs that someone may be in crisis. Checked on the device before any text
+// is sent to Claude; a match shows the 988 Lifeline card instead of a chat.
+const CRISIS_PATTERN = new RegExp([
+  'kill(?:ing)? my ?self',
+  'suicid(?:e|al)',
+  'end (?:it all|my life)',
+  'want(?:ed)? to die',
+  'wish i (?:was|were) dead',
+  "don'?t want to (?:live|be alive|wake up|be here)",
+  'no reason to live',
+  'better off dead',
+  'hurt(?:ing)? my ?self',
+  'self[- ]?harm',
+  'cut(?:ting)? my ?self',
+].map((p) => `\\b${p}\\b`).join('|'), 'i');
+
+export function crisisCheck(text) {
+  return CRISIS_PATTERN.test(String(text ?? '').replace(/[’‘]/g, "'"));
+}
+
+export const MAX_NOTE_LENGTH = 160;
+
+// A short note from Talk it through, saved on a pending or parked thought.
+export function setNote(state, id, note) {
+  const clean = cleanText(note)?.slice(0, MAX_NOTE_LENGTH) ?? null;
+  const withNote = (t) => {
+    if (t.id !== id) return t;
+    const { note: _old, ...rest } = t;
+    return clean ? { ...rest, note: clean } : rest;
+  };
+  return { ...state, pending: state.pending.map(withNote), parked: state.parked.map(withNote) };
 }

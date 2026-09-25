@@ -2,8 +2,9 @@
 import {
   addThought, releaseThought, parkThought, toggleDone, morningList, modeForHour,
   load, save, promptAt, breathPhase, letGoParked, recordNight, markNightSeen, nightSummary,
-  MAX_LENGTH,
+  setNote, MAX_LENGTH,
 } from './store.js';
+import { openTalk, openSettings } from './companion.js';
 import { renderSky, shootingStar, hideStarInfo } from './sky.js';
 
 const screen = document.getElementById('screen');
@@ -100,6 +101,21 @@ toggle.addEventListener('click', (event) => {
   const button = event.target.closest('button[data-mode]');
   if (button && button.dataset.mode !== mode) setMode(button.dataset.mode);
 });
+
+document.getElementById('open-settings').addEventListener('click', () => openSettings());
+
+// A note saved from Talk it through, shown under the thought.
+function noteLine(thought, className) {
+  return thought.note ? [el('span', { className, textContent: thought.note })] : [];
+}
+
+function talkButton(label) {
+  const button = el('button', { type: 'button', className: 'talk-button' }, [
+    el('span', { className: 'talk-icon', textContent: '✦' }),
+    label,
+  ]);
+  return button;
+}
 
 // ---- Undo toast -----------------------------------------------------------
 
@@ -224,11 +240,25 @@ function stopPrompts() {
 function cardFor(thought) {
   const release = el('button', { type: 'button', className: 'btn btn-quiet', textContent: 'Let it go' });
   const park = el('button', { type: 'button', className: 'btn btn-primary', textContent: 'Tomorrow' });
+  const talk = talkButton('Talk it through');
   const card = el('li', { className: 'card' }, [
     el('p', { className: 'card-text', textContent: thought.text }),
+    ...noteLine(thought, 'card-note'),
+    talk,
     el('div', { className: 'card-actions' }, [release, park]),
   ]);
   card.dataset.id = thought.id;
+
+  talk.addEventListener('click', () => {
+    openTalk({
+      thought: state.pending.find((t) => t.id === thought.id) ?? thought,
+      mode: 'night',
+      onSave: (note) => {
+        commit(setNote(state, thought.id, note));
+        park.click();
+      },
+    });
+  });
 
   release.addEventListener('click', () => {
     const before = state;
@@ -410,7 +440,10 @@ function renderMorning({ animate = true } = {}) {
 function checkItemFor(thought) {
   const check = el('button', { type: 'button', className: 'check-item' }, [
     el('span', { className: 'check-box' }),
-    el('span', { className: 'check-text', textContent: thought.text }),
+    el('span', { className: 'check-body' }, [
+      el('span', { className: 'check-text', textContent: thought.text }),
+      ...noteLine(thought, 'check-note'),
+    ]),
   ]);
   check.setAttribute('role', 'checkbox');
   check.setAttribute('aria-checked', String(thought.done));
@@ -425,7 +458,19 @@ function checkItemFor(thought) {
   item.dataset.id = thought.id;
 
   if (!thought.done) {
-    const letGo = el('button', { type: 'button', className: 'morning-letgo', textContent: 'Let go' });
+    const talk = el('button', { type: 'button', className: 'morning-side morning-talk', textContent: '✦ Talk' });
+    talk.setAttribute('aria-label', `Talk it through: “${thought.text}”`);
+    talk.addEventListener('click', () => {
+      openTalk({
+        thought,
+        mode: 'morning',
+        onSave: (note) => {
+          commit(setNote(state, thought.id, note));
+          renderMorningList();
+        },
+      });
+    });
+    const letGo = el('button', { type: 'button', className: 'morning-side morning-letgo', textContent: 'Let go' });
     letGo.title = 'Doesn’t matter anymore';
     letGo.setAttribute('aria-label', `Doesn’t matter anymore: let go of “${thought.text}”`);
     letGo.addEventListener('click', () => {
@@ -440,7 +485,7 @@ function checkItemFor(thought) {
         else { renderMorningList(); updateAllClear(true); }
       }, motionMs('--morning-release-ms'));
     });
-    item.append(letGo);
+    item.append(el('div', { className: 'morning-sides' }, [talk, letGo]));
   }
   return item;
 }
