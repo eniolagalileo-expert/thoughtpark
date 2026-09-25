@@ -38,12 +38,20 @@ In a browser: type three thoughts, park two as "Tomorrow" and let one go (it gen
 - Gentle prompts that appear when the learner stops typing, to help empty the mind (learner-approved improvement)
 - A 60-second breathing moment after "All parked" (idea A, moved in from Later by the learner)
 
+## AI companion (learner decision, final review)
+The learner asked for a richer idea ("There can be LLM chat for each parked item… Think.") and approved four additions:
+- **Talk it through:** a short, calm Claude chat for any thought, adapted to worries, tasks, and regrets; it ends with a one-line note that is parked with the thought.
+- **Speak instead of type:** voice input, split by Claude into separate thoughts.
+- **Morning plan:** Claude turns the morning list into a short, ordered plan.
+- **Safety:** thoughts that suggest a crisis show the 988 Suicide & Crisis Lifeline instead of a chat.
+The learner declined AI sorting (Claude suggesting Tomorrow / Let go): making that decision yourself is part of the kernel.
+
 ## Later
 - One-tap morning sleep rating and a view of which nights went well (idea C)
-- Optional AI suggestions for sorting or rephrasing worries
+- AI suggestions for sorting thoughts (declined by the learner for now; the manual decision is the kernel)
 - Voice input for thoughts
 
 ## Explicitly Cut
 - Accounts, sync, and a backend: not needed to prove the kernel and add setup time.
-- Automatic AI sorting: needs an API key and cost; the manual one-tap decision is part of the value.
+- Automatic AI sorting: the manual one-tap decision is part of the value. (Other AI features were added later at the learner's request; see "AI companion".)
 - Sleep tracking with sensors/wearables: far outside a 2–4 hour proof of concept.

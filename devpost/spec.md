@@ -93,6 +93,28 @@ PRD ref: `prd.md > Gentle prompts`.
 Full-screen view started from Goodnight. Uses `breathPhase(elapsedMs)` from `store.js` (4 s in, 6 s out, 6 cycles = 60 s) on a `requestAnimationFrame` loop to set the label, the remaining seconds, and the circle's scale. Stop returns to Goodnight; the end state is a near-black "Goodnight" overlay.
 PRD ref: `prd.md > Breathing moment`.
 
+### AI client (`js/ai.js`)
+Wraps the official Anthropic TypeScript/JavaScript SDK (`@anthropic-ai/sdk` 0.128.0), loaded in the browser as an ES module from jsdelivr (`https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.128.0/+esm`), no build step. The client is created with the user's own key and `dangerouslyAllowBrowser: true` (safe here because the key belongs to the person using the page and never leaves their browser except to Anthropic).
+- Model: `claude-opus-5` with adaptive thinking (the default), `output_config.effort: "low"` for fast, short replies.
+- Refusal fallback: `client.beta.messages` with `betas: ["server-side-fallback-2026-07-01"]` and `fallbacks: "default"`; `stop_reason === "refusal"` is still checked and shown as a gentle message.
+- `talkStream({ thought, mode, history, onText })`: streams a chat reply with `stream.on("text")` and `finalMessage()`.
+- `noteFor({ thought, history })`, `splitThoughts(transcript)`, `morningPlan(items)`: single calls with `output_config.format` JSON schemas (`additionalProperties: false`), parsed with `JSON.parse`.
+- Errors use the SDK's typed classes (`AuthenticationError`, `RateLimitError`, `APIConnectionError`, `APIError`) mapped to plain messages.
+- Demo mode (no key): each function returns labeled sample output without network calls.
+- The key is stored in `localStorage` under `thoughtpark:apiKey`, separate from app data.
+PRD ref: `prd.md > AI companion`.
+
+### Safety check (`store.js` → `crisisCheck`)
+Pure function run on any text before it is sent to Claude; a match shows the 988 card instead. Tested.
+PRD ref: `prd.md > AI companion` (Safety).
+
+### Talk panel, settings panel, voice, morning plan (`js/app.js`)
+- Talk panel: a modal bottom sheet (`<dialog>`) with the thought, streamed messages, a text box, "Park with this note", and "Close". Conversation history lives in memory only.
+- Settings panel: `<dialog>` with a password-type key field, Save, Remove, demo-mode status, and the privacy note.
+- Voice: the browser's `SpeechRecognition` / `webkitSpeechRecognition`; hidden if unavailable. Transcript → `splitThoughts` (AI) or `splitLocally` (store.js, tested).
+- Morning plan: button + card above the morning list.
+PRD ref: `prd.md > AI companion`.
+
 ### Undo toast
 After release or park, shows "Released · Undo" or "Parked · Undo" for 5 seconds; Undo calls `restore()`. Only the most recent action can be undone.
 PRD ref: `prd.md > Parking thoughts (the kernel)`.
@@ -125,6 +147,7 @@ build-with-ai/
 ├── js/
 │   ├── store.js        # Pure data logic, prompts, breathing timing, star positions, load/save (tested)
 │   ├── sky.js          # Night sky layer: stars, shooting stars, sunrise
+│   ├── ai.js           # Claude calls (talk, note, split, plan), demo mode, key storage
 │   └── app.js          # Screens, event handlers, mode toggle, undo toast, prompt timer, breathing
 ├── tests/
 │   └── store.test.js   # node --test unit tests for store.js
@@ -136,9 +159,11 @@ build-with-ai/
 ```
 
 ## External Services and Dependencies
+- **Anthropic Messages API** via `@anthropic-ai/sdk` 0.128.0 (jsdelivr ESM). Calls go from the browser to `api.anthropic.com` with the user's key. Model `claude-opus-5`, effort `low`; about a few cents per night of use. Docs: https://docs.anthropic.com/en/api/messages
+- **Browser speech recognition** (Web Speech API; in Chrome, audio is processed by Google's speech service). Docs: https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition
 - **Google Fonts (Nunito)** — CSS link `https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap`. No key, free. Falls back to `system-ui` when offline.
 - **GitHub Pages (optional hosting)** — free for public repos. Docs: https://docs.github.com/en/pages
-- No APIs, no keys, no costs.
+- The AI features need the user's own Anthropic API key; everything else needs no keys and costs nothing.
 
 ## Important Failure Modes
 - **`localStorage` unavailable** (private browsing or blocked storage) → the app still works for the session and shows a small note: "Saving is off in this browser, so thoughts won't be kept overnight."
@@ -152,6 +177,8 @@ build-with-ai/
 - **DOM + CSS stars** instead of a canvas or WebGL scene — a few dozen elements animate smoothly, stay accessible to `prefers-reduced-motion`, and need no library.
 
 ## Decisions and Open Issues
+- **AI companion with the user's own key, straight from the browser** — agent recommendation accepted by the learner. Tradeoff: no server to run or pay for, but each user needs their own key; judges without one see labeled demo replies. A hosted proxy would be the next step for a real launch.
+- **`claude-opus-5` at low effort** — the skill's default model; low effort keeps replies short and quick for a bedtime chat.
 - **Plain HTML/CSS/JS with `localStorage`** — agent recommendation, accepted by the learner's approval of this spec. Tradeoff: hand-written rendering instead of a framework's components.
 - **GitHub Pages deploy** — agent recommendation, optional; decided in `6-ship`.
 - **Night sky, gentle prompts, breathing moment** — learner-approved additions after the first checkpoint; implemented with the same no-framework stack.

@@ -112,13 +112,47 @@ Added at the learner's request during final review ("add some animations and som
   - [ ] The counts match the parks and releases made at night since the Morning screen was last opened.
   - [ ] The line is hidden when nothing was parked or released.
 
+### AI companion
+Added at the learner's request during final review; learner approved features 1, 2, 4, and 5 of the proposal (not AI sorting).
+
+**Settings and privacy**
+- A settings button in the header opens a panel where the user pastes their own Anthropic API key. The key is kept only in this browser and sent only to Anthropic.
+- The panel explains plainly: only thoughts you choose to talk through, speak, or plan are sent to Claude; nothing else leaves the device.
+- Without a key the app runs in **demo mode**: every AI answer is a clearly labeled sample ("Demo reply — add your API key for real answers").
+  - [ ] Saving a key switches demo labels off; removing it switches them back on.
+
+**Talk it through**
+- As someone lying awake with a thought, I want a short, calm conversation that helps me settle it, so I can park it with a clear note.
+- Available from every night card and every open morning item ("Talk").
+- A chat panel opens with the thought at the top. Claude writes the first message, adapted to what the thought is: a worry (gentle questions: what's most likely, what's in your control, is this for tonight or tomorrow), a task (one tiny first step), or a regret (a kinder view and an invitation to let it go). Replies stream in word by word, stay short (2–4 sentences), and the conversation wraps up after about three exchanges.
+- "Park with this note" asks Claude for a one-line note (for example "First step: open the passport form, 5 min"), saves it on the thought, and parks it (from a night card) or updates it (from the morning). The note appears under the thought on cards, in the morning list, and in the star's info.
+- "Close" keeps the thought as it was. The conversation itself is never saved.
+  - [ ] The first reply streams in without the user typing anything.
+  - [ ] After "Park with this note", the thought shows its note everywhere it appears.
+  - [ ] An API error (bad key, no network, rate limit) shows a plain message in the chat and nothing is lost.
+
+**Speak instead of type**
+- A microphone button next to Add. The user talks; when they stop, the words are split into separate thoughts that appear as cards.
+  - [ ] With a key, Claude splits the words into thoughts; without a key, a simple split on sentences and "and" is used.
+  - [ ] If the browser has no speech recognition, the button is hidden.
+
+**Morning plan**
+- "Make my morning plan" above the morning list. Claude orders the open thoughts into a short plan with one line each and a friendly one-sentence opener.
+  - [ ] The plan shows as a card above the list; each step names its thought.
+  - [ ] It only uses open (unchecked) thoughts; with none open, the button is hidden.
+
+**Safety**
+- Before anything is sent to Claude, the app checks the text for signs of crisis (for example "kill myself", "want to die", "hurt myself"). If found, it shows a calm card: "You don't have to carry this alone. Call or text 988 (Suicide & Crisis Lifeline, US), available 24/7," with a link, and does not start a chat.
+- Claude's instructions also say to point to 988 if risk appears in conversation.
+  - [ ] Crisis wording always shows the 988 card and never calls the API.
+
 ## States and Boundaries
 - **First use:** the Night screen shows a one-line hint under the box: "Type each thought, then park it. They'll be waiting in the morning."
 - **Nothing to park yet:** the Night screen shows only the text box and the hint.
 - **Morning with nothing parked:** "Nothing was parked. Clear mind, clear day." and a link to the Night screen.
 - **Unfinished parking:** if the user closes the app with unparked cards, they're still there next time on the Night screen (proposed).
 - **Persistence:** parked thoughts, checked state, unparked cards, and last night's two counts are saved on this device and survive closing and reopening the browser. "Let it go" thoughts are never saved.
-- **Boundary:** one person, one device. No accounts, no sharing.
+- **Boundary:** one person, one device. No accounts, no sharing. AI features use the user's own API key; the app has no server.
 
 ## Product Decisions
 - **Manual one-tap sorting, not AI sorting** — learner approved in scope: the decision itself settles the mind, and no API key is needed.
@@ -141,7 +175,7 @@ Added at the learner's request during final review ("add some animations and som
 
 ## Deferred From the POC
 - **Morning sleep rating and history** (scope idea C) — needs charts and several days of data to show value.
-- **AI help sorting or rephrasing thoughts** — needs an API key and adds cost.
+- **AI suggestions for sorting thoughts** — declined by the learner; the manual decision is the kernel.
 - **Syncing across devices** — would need accounts and a backend.
 
 ## Possible Later Enhancements
@@ -150,6 +184,7 @@ Added at the learner's request during final review ("add some animations and som
 - Carrying unchecked morning items into the next night's list.
 
 ## Non-Goals
+- Not therapy or medical advice: Talk it through is a short reflective aid, says so in the settings panel, and points to 988 when there are signs of crisis.
 - Not a sleep tracker: no sensors, wearables, or sleep scores.
 - Not a journal: released thoughts are deliberately never kept.
 - Not a to-do app: no due dates, priorities, or categories.

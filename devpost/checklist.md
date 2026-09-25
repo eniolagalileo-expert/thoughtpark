@@ -69,6 +69,36 @@ Build mode: fast (learner approved)
   Learner check: Open the app on your phone-sized window and desktop, try the whole night-to-morning journey, and say what you'd change.
   Commit: `Polish design, add README and license`
 
+- [ ] **7. Talk any thought through with Claude, safely**
+  Becomes usable: A settings panel for your own API key (or demo mode); a "Talk" button on night cards and morning items opens a calm streamed chat that ends with "Park with this note"; crisis wording shows the 988 card instead.
+  Why now: The learner's main request; the safety check must ship with the first AI feature.
+  PRD ref: `prd.md > AI companion`
+  Spec ref: `spec.md > AI client (js/ai.js)`, `spec.md > Safety check (store.js → crisisCheck)`, `spec.md > Talk panel, settings panel, voice, morning plan (js/app.js)`
+  Build: `js/ai.js`; `crisisCheck` and note support in `store.js`; settings dialog; talk dialog with streaming; notes shown on cards, morning items, and star info.
+  Verify (mechanical): unit tests for `crisisCheck` and notes; headless browser with the Anthropic API intercepted: request uses `claude-opus-5`, the fallback beta header and `fallbacks: "default"`, and the user's key; streamed reply renders; "Park with this note" saves and shows the note; a 401 shows a plain error; crisis text shows 988 with no request made; demo mode works with no key and no network call.
+  Learner check: Add your API key in Settings, talk through one worry, and park it with its note.
+  Commit: `Add Talk it through with Claude, settings, and safety`
+
+- [ ] **8. Speak your thoughts instead of typing**
+  Becomes usable: A microphone button turns spoken words into separate thought cards.
+  Why now: Builds on the AI client from slice 7.
+  PRD ref: `prd.md > AI companion` (Speak instead of type)
+  Spec ref: `spec.md > Talk panel, settings panel, voice, morning plan (js/app.js)`
+  Build: mic button, speech recognition, `splitThoughts` (AI) and `splitLocally` fallback.
+  Verify (mechanical): unit tests for `splitLocally`; headless browser with a fake SpeechRecognition and intercepted API: a transcript becomes three cards; the button hides when speech recognition is missing.
+  Learner check: Press the microphone, say three things on your mind, and see three cards.
+  Commit: `Add voice input for thoughts`
+
+- [ ] **9. A morning plan from Claude**
+  Becomes usable: "Make my morning plan" turns open morning thoughts into a short ordered plan.
+  Why now: Uses the AI client and the morning list.
+  PRD ref: `prd.md > AI companion` (Morning plan)
+  Spec ref: `spec.md > Talk panel, settings panel, voice, morning plan (js/app.js)`
+  Build: `morningPlan` in `ai.js`; plan button and card.
+  Verify (mechanical): headless browser with intercepted API: the plan card lists steps for the open thoughts only; demo mode labeled; errors shown plainly.
+  Learner check: In the morning, press "Make my morning plan".
+  Commit: `Add morning plan`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
@@ -80,6 +110,7 @@ Build mode: fast (learner approved)
 - [x] Morning moments: stars fall into the list, check-off burst and All clear, morning Let go, last night's summary — learner request at final review; learner approved all four. Verified: 20 browser checks (normal and reduced motion), 4 new unit tests, all earlier checks re-run.
 - [x] Moon at night, sun in the morning, and a visible morning Let go animation — learner feedback ("In the morning, there should be a sun… even I click let it go, I can't see any animation. In the night, there should be a moon"). The Let go bug: the arrival animation rule overrode the release animation; fixed with a more specific selector and verified by reading the running animation name.
 - [x] Morning Let go shines: rainbow shimmer across the card plus a burst of rainbow sparkles as it fades — learner request ("it should be shine as a rainbow or spark or sun ray"); verified sparkles appear and clean up, shimmer and release animations run, reduced motion falls back to a fade.
+- [ ] AI companion (slices 7–9) — learner asked for a richer idea with LLM chat; approved Talk it through, voice, morning plan, and safety.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -100,3 +131,4 @@ Activity mode:
 - Undo restores a saved copy of the state from just before the action instead of a `restore()` helper, and is verified in the browser rather than a unit test — this reverses the action exactly, including checked-off morning items that parking clears.
 - The sunrise is driven by CSS on the theme change rather than a `sunrise()` function in `sky.js` — a CSS transition on `body[data-theme]` was simpler and already plays whenever the mode changes.
 - On the Goodnight and Breathing screens the sky layer now sits above the text (buttons stay on top), and star positions start below the header — found while verifying star info: stars behind text or the header couldn't be hovered.
+- Added slices 7–9 (AI companion) after the learner asked for a richer idea at final review; recorded in `scope.md`, `prd.md`, and `spec.md`. This reverses the earlier "no AI" decision at the learner's request.
