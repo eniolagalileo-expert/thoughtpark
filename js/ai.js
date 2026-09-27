@@ -369,7 +369,7 @@ function demoInsights(summary) {
 }
 
 function demoPlan(items) {
-  const times = ['first thing', 'after breakfast', 'mid-morning', 'before lunch', 'this afternoon'];
+  const times = ['First thing', 'After breakfast', 'Mid-morning', 'Before lunch', 'This afternoon'];
   return {
     opener: 'Here’s a gentle order for your morning.',
     steps: items.map((t, i) => ({ id: t.id, action: `${times[Math.min(i, times.length - 1)]}: ${t.note || t.text}` })),
