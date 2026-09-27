@@ -192,7 +192,7 @@ Build mode: fast (learner approved)
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2 (night parking and morning handoff both working). Learner feedback: asked what the project is and to improve the idea; approved three additions (night sky stars, gentle prompts, breathing moment). Learner did not report on hands-on use.
-- [ ] Final kick-the-tires exploration and feedback completed — learner tried the app and asked for star info and morning improvements; in progress
+- [x] Final kick-the-tires exploration and feedback completed — over several rounds the learner tried the app and asked for star info, morning animations, sun and moon, a rainbow let go, the AI companion, a welcome guide, sleep tools, a dream journal, a calendar, and six more ideas; all were built and verified.
 
 ## Final Review
 
@@ -203,19 +203,19 @@ Build mode: fast (learner approved)
 - [x] AI companion (slices 7–9) — learner asked for a richer idea with LLM chat; approved Talk it through, voice, morning plan, and safety. Verified against an intercepted API (request shape, streaming, errors, crisis handling, demo mode); not yet run against the live API because no key was available to the agent.
 - [x] Welcome guide for first-time visitors plus "How it works" links — learner request at final review. Verified: opens once on first visit, four steps with keyboard support, Skip/Escape/Start all remember it, reopens from both screens.
 - [x] Sleep tools recorded in the calendar — learner request at final review. Verified with 2 unit tests and 11 browser checks; fixed a bug found by the test where switching screens mid-tool left the entry open.
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship ("go ahead" in reply to "say ship it when you're ready"). Not yet verified against the live Anthropic API or with real speech; the learner is asked to check both.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — brief recap (the learner prefers fewer steps and asked the agent to proceed)
+- [x] Optional edit and transfer reflection addressed — optional reflection question offered at hand-off; no edit exercise
+- [x] `devpost/app-map.html` generated from finished code (commit 10b83c4), anchors checked against source, and shown, including a project-grounded practice to reuse
 
-Activity and evidence:
-Route and stops:
-Edit outcome:
-Reflection:
-Activity mode:
+Activity and evidence: Brief recap. The practice connects the checklist's mechanical checks to three real defects they caught (recurring-worry duplicates via a unit test, an open sleep-tool entry via a browser check, the 5 pm worry-time conflict via the written rule).
+Route and stops: Reference route only (not toured): js/app.js cardFor → js/store.js parkThought/rememberParked → js/app.js commit → js/sky.js renderSky.
+Edit outcome: Not applicable (no edit exercise).
+Reflection: Offered at hand-off.
+Activity mode: Recap.
 
 ## Revisions
 
