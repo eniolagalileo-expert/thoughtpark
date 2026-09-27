@@ -64,12 +64,12 @@ The app picks Night or Morning from the time of day (morning is 5 am to 5 pm). T
 
 ## Try it
 
-**Live:** _link added at submission_
+**Live:** https://eniolagalileo-expert.github.io/thoughtpark/
 
 **Run locally** (no install needed, Node 18+ or Python 3):
 
 ```bash
-git clone <this repo>
+git clone https://github.com/eniolagalileo-expert/thoughtpark.git
 cd thoughtpark
 npm start          # or: python3 -m http.server 8000
 ```
