@@ -39,6 +39,7 @@ PRD ref: `prd.md > The Core Journey`.
 - **Tests:** `node --test`.
 - **Optional deployment (recommended, free):** GitHub Pages from the `main` branch root, so judges can try it with one click. Steps are recorded for `6-ship`: push to a public repo → Settings → Pages → Deploy from branch → `main` / root.
 - **Submission still requires** the demo video and the public GitHub repository; the live link is extra.
+- **Published:** repository https://github.com/eniolagalileo-expert/thoughtpark (public); live app https://eniolagalileo-expert.github.io/thoughtpark/ (GitHub Pages from `main` root). Both verified signed-out. Demo video: to be recorded and linked by the learner.
 
 ## Look and Feel
 From `prd.md > Look and Feel`.
