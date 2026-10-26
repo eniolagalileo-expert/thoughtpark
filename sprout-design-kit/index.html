@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprout · mood board, design brief and clickable mockups</title>
+<meta name="description" content="Design kit for Sprout, a plant-care companion app: mood board, the design brief distilled from it, and four clickable screens built from that brief.">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --moss: #3f9d5a; --moss-deep: #2f7a45; --terracotta: #c9674a; --clay: #f3e7d8; --paper: #faf6ee;
+    --ink: #243127; --muted: #6f7a70; --line: #e4dccd; --sun: #f2c14e; --card: #ffffff;
+    --r: 22px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font-family: Inter, system-ui, sans-serif; color: var(--ink); background: var(--paper); -webkit-font-smoothing: antialiased; }
+  h1, h2, h3, .display { font-family: Fredoka, Inter, sans-serif; letter-spacing: .1px; }
+  a { color: inherit; }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(250,246,238,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1120px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 10px; font-family: Fredoka; font-weight: 700; font-size: 22px; }
+  .logo span { width: 30px; height: 30px; border-radius: 9px; background: var(--moss); display: grid; place-items: center; }
+  nav { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+  nav a { text-decoration: none; padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--muted); }
+  nav a:hover { background: var(--clay); color: var(--ink); }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px 20px 80px; }
+  .hero { padding: 36px 0 18px; }
+  .hero h1 { font-size: clamp(34px, 5vw, 52px); margin: 0 0 8px; line-height: 1.05; }
+  .hero p { color: var(--muted); font-size: 17px; max-width: 640px; margin: 0; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--terracotta); margin: 48px 0 8px; }
+  h2 { font-size: 30px; margin: 0 0 6px; }
+  .lead { color: var(--muted); margin: 0 0 22px; max-width: 680px; }
+
+  /* Mood board */
+  .board { display: grid; grid-template-columns: repeat(6, 1fr); grid-auto-rows: 150px; gap: 14px; }
+  .tile { border-radius: var(--r); padding: 18px; position: relative; overflow: hidden; border: 1px solid var(--line); background: var(--card); }
+  .tile .lbl { position: absolute; left: 16px; bottom: 14px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .t-moss { background: var(--moss); grid-column: span 2; color: #fff; }
+  .t-terra { background: var(--terracotta); color: #fff; }
+  .t-clay { background: var(--clay); }
+  .t-ink { background: var(--ink); color: #fff; }
+  .t-sun { background: var(--sun); }
+  .t-type { grid-column: span 2; grid-row: span 2; }
+  .t-type .display { font-size: 46px; line-height: 1; margin: 0 0 8px; }
+  .t-type .body { font-size: 15px; color: var(--muted); line-height: 1.5; }
+  .t-type .small { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; margin-top: 12px; }
+  .t-paper { grid-column: span 2; background: repeating-linear-gradient(0deg, transparent 0 26px, #e7dfcf 26px 27px), #fbf7ef; }
+  .t-paper .note { font-family: 'Comic Sans MS', 'Bradley Hand', cursive; color: var(--moss-deep); font-size: 15px; line-height: 27px; margin-top: 4px; }
+  .t-pot { grid-row: span 2; display: grid; place-items: center; background: linear-gradient(180deg, #fbf4ea, #f1e2d2); }
+  .t-icons { grid-column: span 2; display: flex; align-items: center; justify-content: space-around; padding: 18px 24px 30px; }
+  .t-icons svg { width: 44px; height: 44px; fill: none; stroke: var(--moss-deep); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .t-shape { display: grid; place-items: center; gap: 8px; }
+  .t-shape .pill { background: var(--moss); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+  .t-shape .cardlet { width: 90px; height: 44px; border-radius: 16px; background: var(--clay); border: 1px solid var(--line); }
+  .t-grid { background: linear-gradient(90deg, #efe6d9 1px, transparent 1px) 0 0/8px 8px, linear-gradient(#efe6d9 1px, transparent 1px) 0 0/8px 8px, #fff; }
+  .t-grid b { display: block; font-family: Fredoka; font-size: 28px; }
+  .t-ref { grid-column: span 2; }
+  .t-ref ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .t-ref li b { color: var(--ink); }
+  @media (max-width: 900px) { .board { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 520px) { .board { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 140px; } .t-type { grid-column: span 2; } }
+
+  /* Brief */
+  .brief { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .bcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; }
+  .bcard h3 { margin: 0 0 10px; font-size: 19px; }
+  .bcard table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .bcard td { padding: 6px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  .bcard td:first-child { font-weight: 600; width: 44%; }
+  .sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 8px; border: 1px solid rgba(0,0,0,.08); }
+  .bcard ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.55; color: var(--muted); }
+  .bcard li b { color: var(--ink); }
+
+  /* Mockups */
+  .proto { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: start; }
+  @media (max-width: 760px) { .proto { grid-template-columns: 1fr; } }
+  .phone { width: 300px; height: 620px; border-radius: 44px; background: #1e241f; padding: 12px; box-shadow: 0 30px 60px rgba(36,49,39,.25); position: sticky; top: 76px; }
+  .screen { width: 100%; height: 100%; border-radius: 34px; background: var(--paper); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 90px; height: 24px; border-radius: 999px; background: #1e241f; z-index: 2; }
+  .sc { display: none; flex: 1; flex-direction: column; overflow: auto; padding: 46px 18px 16px; }
+  .sc.on { display: flex; }
+  .sc h2 { font-size: 26px; margin: 8px 0 2px; }
+  .sc .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .plant { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: transform .1s; }
+  .plant:active { transform: scale(.98); }
+  .leaf { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: var(--clay); flex: none; }
+  .plant b { display: block; font-size: 15px; }
+  .plant small { color: var(--muted); font-size: 12px; }
+  .due { margin-left: auto; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: #fdf0d2; color: #8a6414; }
+  .due.ok { background: #dff3e5; color: var(--moss-deep); }
+  .tabs { display: flex; justify-content: space-around; padding: 10px 8px 14px; border-top: 1px solid var(--line); background: #fff; }
+  .tabs button { background: none; border: 0; font: inherit; font-size: 11px; font-weight: 600; color: var(--muted); display: grid; justify-items: center; gap: 4px; cursor: pointer; padding: 4px 10px; border-radius: 12px; }
+  .tabs button.on { color: var(--moss-deep); background: var(--clay); }
+  .tabs svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .btn { display: block; width: 100%; border: 0; border-radius: 999px; background: var(--moss); color: #fff; font: inherit; font-weight: 700; padding: 13px; cursor: pointer; margin-top: auto; }
+  .btn.ghost { background: #fff; color: var(--ink); border: 1.5px solid var(--line); margin-top: 8px; }
+  .btn.terra { background: var(--terracotta); }
+  .hero-plant { background: linear-gradient(180deg, #e2f1e6, #fbf7ef); border-radius: 22px; height: 150px; display: grid; place-items: center; font-size: 76px; margin-bottom: 12px; }
+  .stat { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat div { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px; text-align: center; }
+  .stat b { font-family: Fredoka; font-size: 18px; display: block; }
+  .stat small { font-size: 11px; color: var(--muted); }
+  .back { background: none; border: 0; font: inherit; color: var(--moss-deep); font-weight: 600; padding: 0; cursor: pointer; text-align: left; }
+  .cam { border: 2px dashed #bcd6c3; border-radius: 22px; height: 170px; display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; margin-bottom: 12px; background: #fff; }
+  .field { background: #fff; border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  .garden { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .garden div { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 12px; text-align: center; cursor: pointer; }
+  .garden .leaf { margin: 0 auto 6px; }
+  .garden b { font-size: 13px; display: block; }
+  .garden small { font-size: 11px; color: var(--muted); }
+  .toast { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  .flow { display: grid; gap: 12px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; display: flex; gap: 14px; cursor: pointer; }
+  .step:hover { border-color: var(--moss); }
+  .step.on { border-color: var(--moss); box-shadow: 0 0 0 3px rgba(63,157,90,.15); }
+  .step .n { font-family: Fredoka; font-size: 22px; color: var(--moss); width: 28px; flex: none; }
+  .step b { display: block; margin-bottom: 2px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 28px; }
+  .gallery .mini { transform-origin: top left; }
+  .cap { text-align: center; font-size: 13px; color: var(--muted); margin-top: 8px; font-weight: 600; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 30px 20px; border-top: 1px solid var(--line); }
+  /* ?cover=1: only the four screens, for the project cover image */
+  body.cover header, body.cover footer, body.cover main > :not(#gallery) { display: none; }
+  body.cover main { padding: 110px 30px 30px; max-width: 1320px; }
+  body.cover .gallery { margin-top: 0; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .sc { min-height: 0; }
+  .plant > div { min-width: 0; }
+  .plant b { white-space: nowrap; }
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11"/><path d="M12 14c-5 0-7-3-7-7 4 0 7 2 7 7z"/><path d="M12 11c0-5 3-7 7-7 0 4-2 7-7 7z"/></svg></span>Sprout · design kit</div>
+  <nav><a href="#mood">Mood board</a><a href="#brief">Design brief</a><a href="#mockups">Mockups</a></nav>
+</div></header>
+
+<main>
+  <section class="hero">
+    <h1>Sprout: a plant-care companion that feels like a garden journal, not a dashboard.</h1>
+    <p>Sprout tells you which houseplants need water today, remembers each plant's history, and makes adding a new plant as easy as taking a photo. This page shows how the look was decided: references first, then rules, then screens.</p>
+  </section>
+
+  <div class="eyebrow" id="mood">01 · Mood board</div>
+  <h2>References and the patterns behind them</h2>
+  <p class="lead">Tiles collected from the things Sprout should feel like: seed packets, a ruled garden journal, terracotta pots in afternoon light. Each tile has the pattern it contributes written on it.</p>
+  <div class="board">
+    <div class="tile t-moss"><b style="font-family:Fredoka;font-size:26px">Moss</b><br><span style="opacity:.85;font-size:13px">#3F9D5A · the one action colour</span><span class="lbl" style="color:#e6f4ea">from leaf undersides, not neon lawn</span></div>
+    <div class="tile t-terra"><b style="font-family:Fredoka;font-size:22px">Terracotta</b><span class="lbl" style="color:#fbe3d9">#C9674A · warmth, pots</span></div>
+    <div class="tile t-type">
+      <div class="display">Water the fern.</div>
+      <div class="body">Fredoka for headings: round, friendly, a little hand-painted like a seed-packet label. Inter for everything you read twice.</div>
+      <div class="small">Latin names in small caps</div>
+    </div>
+    <div class="tile t-clay"><b style="font-family:Fredoka;font-size:22px">Clay</b><span class="lbl">#F3E7D8 · surfaces, chips</span></div>
+    <div class="tile t-paper"><div class="note">Mon · fern looked droopy, moved to east window<br>Wed · watered 200 ml</div><span class="lbl">garden journal: ruled lines, notes in the owner's own words</span></div>
+    <div class="tile t-pot"><div style="width:84px;height:70px;background:linear-gradient(180deg,#d47c5d,#b85a3f);border-radius:8px 8px 26px 26px;position:relative"><div style="position:absolute;top:-12px;left:-6px;right:-6px;height:18px;background:#d98b6e;border-radius:6px"></div><div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);font-size:36px">🌿</div></div><span class="lbl">matte, rounded, no gloss</span></div>
+    <div class="tile t-ink"><b style="font-family:Fredoka;font-size:22px">Ink</b><span class="lbl" style="color:#b9c5bb">#243127 · green-black text, never pure black</span></div>
+    <div class="tile t-sun"><b style="font-family:Fredoka;font-size:22px">Sunlight</b><span class="lbl" style="color:#6b5413">#F2C14E · "due today" only</span></div>
+    <div class="tile t-icons">
+      <svg viewBox="0 0 24 24"><path d="M12 21V11"/><path d="M12 14c-5 0-7-3-7-7 4 0 7 2 7 7z"/><path d="M12 11c0-5 3-7 7-7 0 4-2 7-7 7z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg>
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M4 20V7l2.5-3L9 7v13M15 20V7l2.5-3L20 7v13M9 10h6M9 15h6"/></svg>
+      <span class="lbl">line icons, 1.8 stroke, round caps</span>
+    </div>
+    <div class="tile t-shape"><div class="pill">Water now</div><div class="cardlet"></div><span class="lbl">pills for actions, 22px cards</span></div>
+    <div class="tile t-grid"><b>8</b><span style="font-size:13px;color:var(--muted)">point grid, 16 / 24 / 32 rhythm</span><span class="lbl">spacing</span></div>
+    <div class="tile t-ref"><ul>
+      <li><b>Seed packets:</b> one big plant name, Latin name small, a single bold colour band.</li>
+      <li><b>Garden journals:</b> dated notes in plain words; history matters more than charts.</li>
+      <li><b>Potting benches:</b> warm neutrals, soft shadows, nothing glossy or "techy".</li>
+    </ul></div>
+  </div>
+
+  <div class="eyebrow" id="brief">02 · Design brief</div>
+  <h2>The board, written as rules anyone can build from</h2>
+  <p class="lead">Every value below traces back to a tile above. This is the brief the screens were generated from.</p>
+  <div class="brief">
+    <div class="bcard"><h3>Palette</h3><table>
+      <tr><td><span class="sw" style="background:#3F9D5A"></span>Moss #3F9D5A</td><td>Primary action, active tab, progress. One accent only.</td></tr>
+      <tr><td><span class="sw" style="background:#C9674A"></span>Terracotta #C9674A</td><td>Secondary and destructive-ish actions (skip, remove).</td></tr>
+      <tr><td><span class="sw" style="background:#F2C14E"></span>Sunlight #F2C14E</td><td>"Due today" chips. Never for buttons.</td></tr>
+      <tr><td><span class="sw" style="background:#F3E7D8"></span>Clay #F3E7D8</td><td>Chips, selected states, plant thumbnails.</td></tr>
+      <tr><td><span class="sw" style="background:#FAF6EE"></span>Paper #FAF6EE</td><td>App background. Cards are white on paper.</td></tr>
+      <tr><td><span class="sw" style="background:#243127"></span>Ink #243127</td><td>All text. Muted text #6F7A70.</td></tr>
+    </table></div>
+    <div class="bcard"><h3>Type</h3><table>
+      <tr><td>Display</td><td>Fredoka 600, 26–52px, line-height 1.05</td></tr>
+      <tr><td>Body</td><td>Inter 400/600, 14–15px, line-height 1.5</td></tr>
+      <tr><td>Labels</td><td>Inter 700, 11–12px, uppercase, +0.12em tracking</td></tr>
+      <tr><td>Latin names</td><td>Inter 500, 12px, muted</td></tr>
+    </table></div>
+    <div class="bcard"><h3>Shape and space</h3><table>
+      <tr><td>Grid</td><td>8pt. Screen padding 18, section gap 24, card padding 12–16.</td></tr>
+      <tr><td>Radius</td><td>Cards 18–22px, chips and buttons full pill, thumbnails 14px.</td></tr>
+      <tr><td>Borders</td><td>1px #E4DCCD on cards; shadows only on the phone frame.</td></tr>
+      <tr><td>Icons</td><td>24px grid, 1.8 stroke, round caps and joins.</td></tr>
+    </table></div>
+    <div class="bcard"><h3>Feel: do and don't</h3><ul>
+      <li><b>Do</b> write like a journal: "Water the fern" not "Task: hydration".</li>
+      <li><b>Do</b> show history as dated notes, one line each.</li>
+      <li><b>Don't</b> use gloss, gradients on buttons, or more than one accent on a screen.</li>
+      <li><b>Don't</b> show charts on the home screen; the home screen is today's list.</li>
+    </ul></div>
+  </div>
+
+  <div class="eyebrow" id="mockups">03 · Clickable mockups</div>
+  <h2>Four screens, generated from the brief</h2>
+  <p class="lead">Tap around the phone: the tab bar, a plant in the list, and the buttons all work. Or jump to a screen from the list on the right.</p>
+  <div class="proto">
+    <div class="phone"><div class="screen" id="screen">
+      <div class="notch"></div>
+      <!-- Today -->
+      <div class="sc on" data-sc="today">
+        <h2>Today</h2><p class="sub">Tuesday · 3 plants need you</p>
+        <div class="plant" data-go="plant"><div class="leaf">🌿</div><div><b>Boston fern</b><small>Nephrolepis · east window</small></div><span class="due">Water</span></div>
+        <div class="plant" data-go="plant"><div class="leaf">🪴</div><div><b>Monstera</b><small>M. deliciosa · living room</small></div><span class="due">Mist</span></div>
+        <div class="plant" data-go="plant"><div class="leaf">🌵</div><div><b>Jade plant</b><small>Crassula · desk</small></div><span class="due">Rotate</span></div>
+        <div class="plant" data-go="plant"><div class="leaf">🌱</div><div><b>Basil</b><small>Ocimum · kitchen</small></div><span class="due ok">Fine</span></div>
+        <button class="btn" data-toast="3 plants marked as done">Mark all done</button>
+      </div>
+      <!-- Plant detail -->
+      <div class="sc" data-sc="plant">
+        <button class="back" data-go="today">‹ Today</button>
+        <div class="hero-plant">🌿</div>
+        <h2 style="margin-top:0">Boston fern</h2><p class="sub">Nephrolepis exaltata · east window</p>
+        <div class="stat"><div><b>5d</b><small>since water</small></div><div><b>Med</b><small>light</small></div><div><b>62%</b><small>humidity</small></div></div>
+        <div class="field" style="font-family:'Comic Sans MS','Bradley Hand',cursive;color:var(--moss-deep)">Mon · looked droopy, moved to east window<br>Wed · watered 200 ml</div>
+        <button class="btn" data-toast="Watered · logged in the journal">Water now</button>
+        <button class="btn ghost" data-toast="Skipped until Friday">Skip 3 days</button>
+      </div>
+      <!-- Add plant -->
+      <div class="sc" data-sc="add">
+        <h2>Add a plant</h2><p class="sub">Snap it and Sprout fills in the rest</p>
+        <div class="cam">📷<br>Tap to take a photo<br><span style="font-size:11px">identifies species and suggests a schedule</span></div>
+        <div class="field">Nickname · e.g. "Kitchen basil"</div>
+        <div class="field">Spot · living room, desk, balcony…</div>
+        <div class="field">Water every · 7 days (suggested)</div>
+        <button class="btn terra" data-go="garden" data-toast="Added to your garden">Add to garden</button>
+      </div>
+      <!-- Garden -->
+      <div class="sc" data-sc="garden">
+        <h2>Garden</h2><p class="sub">12 plants · 4 rooms</p>
+        <div class="garden">
+          <div data-go="plant"><div class="leaf">🌿</div><b>Boston fern</b><small>east window</small></div>
+          <div data-go="plant"><div class="leaf">🪴</div><b>Monstera</b><small>living room</small></div>
+          <div data-go="plant"><div class="leaf">🌵</div><b>Jade plant</b><small>desk</small></div>
+          <div data-go="plant"><div class="leaf">🌱</div><b>Basil</b><small>kitchen</small></div>
+          <div data-go="plant"><div class="leaf">🌷</div><b>Tulips</b><small>balcony</small></div>
+          <div data-go="add" style="border-style:dashed"><div class="leaf">＋</div><b>Add plant</b><small>photo or search</small></div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button data-go="today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Today</button>
+        <button data-go="garden"><svg viewBox="0 0 24 24"><path d="M4 20V7l2.5-3L9 7v13M15 20V7l2.5-3L20 7v13M9 10h6M9 15h6"/></svg>Garden</button>
+        <button data-go="add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div></div>
+    <div class="flow">
+      <div class="step on" data-go="today"><div class="n">1</div><div><b>Today</b><p>The home screen is a list, not a dashboard. Sunlight chips mark what is due; one Moss button clears the day.</p></div></div>
+      <div class="step" data-go="plant"><div class="n">2</div><div><b>Plant detail</b><p>Seed-packet header (big name, small Latin name), three stats, then the journal in the owner's own words.</p></div></div>
+      <div class="step" data-go="add"><div class="n">3</div><div><b>Add a plant</b><p>Camera first, fields second. Terracotta for the secondary flow so Moss stays the one primary.</p></div></div>
+      <div class="step" data-go="garden"><div class="n">4</div><div><b>Garden</b><p>A grid of Clay thumbnails grouped by room; the empty slot is the only dashed element in the app.</p></div></div>
+    </div>
+  </div>
+  <div class="gallery" id="gallery"></div>
+</main>
+<footer>Sprout design kit · mood board, brief and mockups built for the Handshake AI Skills Studio mission "Create Mockups of Your App"</footer>
+
+<script>
+(() => {
+  const screen = document.getElementById('screen');
+  const toast = document.getElementById('toast');
+  let tm;
+  function go(name) {
+    screen.querySelectorAll('.sc').forEach(s => s.classList.toggle('on', s.dataset.sc === name));
+    screen.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.go === name || (name === 'plant' && b.dataset.go === 'today')));
+    document.querySelectorAll('.step').forEach(s => s.classList.toggle('on', s.dataset.go === name));
+    const on = screen.querySelector('.sc.on'); if (on) on.scrollTop = 0;
+  }
+  function say(msg) { toast.textContent = msg; toast.classList.add('show'); clearTimeout(tm); tm = setTimeout(() => toast.classList.remove('show'), 1600); }
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-go],[data-toast]'); if (!t) return;
+    if (t.dataset.toast) say(t.dataset.toast);
+    if (t.dataset.go) go(t.dataset.go);
+  });
+  // Static gallery of all four screens, cloned from the live prototype
+  const gal = document.getElementById('gallery');
+  ['today', 'plant', 'add', 'garden'].forEach(name => {
+    const wrap = document.createElement('div');
+    const ph = document.createElement('div'); ph.className = 'phone'; ph.style.cssText = 'position:static;width:100%;max-width:300px;margin:0 auto;height:auto;aspect-ratio:300/620;pointer-events:none';
+    const sc = screen.cloneNode(true); sc.removeAttribute('id'); sc.querySelector('.toast').remove();
+    sc.querySelectorAll('.sc').forEach(s => s.classList.toggle('on', s.dataset.sc === name));
+    sc.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.go === name || (name === 'plant' && b.dataset.go === 'today')));
+    ph.appendChild(sc); wrap.appendChild(ph);
+    const cap = document.createElement('div'); cap.className = 'cap'; cap.textContent = { today: 'Today', plant: 'Plant detail', add: 'Add a plant', garden: 'Garden' }[name]; wrap.appendChild(cap);
+    gal.appendChild(wrap);
+  });
+  const q = new URLSearchParams(location.search); if (q.get('screen')) go(q.get('screen'));
+  if (q.get('cover')) document.body.classList.add('cover');
+})();
+</script>
+</body>
+</html>
