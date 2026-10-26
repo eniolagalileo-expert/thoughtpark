@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eniola Olaleye · Projects</title>
+<meta name="description" content="Eniola Olaleye, data scientist and ML engineer. A small garden of side projects built with AI: a multiplayer game, a design kit, an icon set, a sticker mascot and a bedtime app.">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f6f1e7; --bg-2:#fffdf8; --ink:#2b2a26; --muted:#6f6a5f; --line:#e2d9c8;
+    --moss:#3f9d5a; --moss-ink:#2d7a43; --clay:#c9674a; --sun:#f2c14e; --chip:#eef3e9;
+    --shadow:0 10px 30px rgba(43,42,38,.08);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg:#16181a; --bg-2:#1f2225; --ink:#f1ede4; --muted:#a8a295; --line:#33373b;
+    --moss:#5cc27a; --moss-ink:#8fdba6; --clay:#e3866a; --sun:#f6cf6a; --chip:#243128;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  } }
+  :root[data-theme="dark"] {
+    --bg:#16181a; --bg-2:#1f2225; --ink:#f1ede4; --muted:#a8a295; --line:#33373b;
+    --moss:#5cc27a; --moss-ink:#8fdba6; --clay:#e3866a; --sun:#f6cf6a; --chip:#243128;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; line-height:1.55; }
+  a { color:var(--moss-ink); }
+  img { max-width:100%; display:block; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 16px; }
+  h1,h2,h3 { font-family:Fredoka, sans-serif; letter-spacing:-.01em; margin:0; }
+  /* nav */
+  nav { position:sticky; top:0; z-index:5; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+  nav .wrap { display:flex; align-items:center; gap:18px; height:60px; }
+  .brand { font-family:Fredoka; font-weight:700; font-size:20px; text-decoration:none; color:var(--ink); display:flex; align-items:center; gap:8px; }
+  .brand svg { width:26px; height:26px; }
+  nav .links { margin-left:auto; display:flex; gap:16px; font-size:15px; font-weight:500; }
+  nav .links a { color:var(--ink); text-decoration:none; opacity:.85; }
+  nav .links a:hover { opacity:1; color:var(--moss-ink); }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:11px 18px; border-radius:999px; font-weight:600; font-size:15px; text-decoration:none; border:1.5px solid transparent; transition:transform .15s; }
+  .btn:hover { transform:translateY(-1px); }
+  .btn.primary { background:var(--moss); color:#fff; }
+  .btn.ghost { border-color:var(--line); color:var(--ink); background:var(--bg-2); }
+  .btn svg { width:18px; height:18px; }
+  /* hero */
+  .hero { padding:72px 0 56px; display:grid; grid-template-columns:1.2fr .8fr; gap:40px; align-items:center; }
+  .hero h1 { font-size:clamp(38px, 6vw, 64px); line-height:1.04; font-weight:700; }
+  .hero h1 em { font-style:normal; color:var(--moss); }
+  .hero p.lead { font-size:19px; color:var(--muted); max-width:560px; margin:20px 0 28px; }
+  .hero .cta { display:flex; gap:12px; flex-wrap:wrap; }
+  .hero .fact { margin-top:26px; color:var(--muted); font-size:14px; display:flex; gap:14px; flex-wrap:wrap; }
+  .hero .fact span::before { content:"●"; color:var(--sun); margin-right:6px; font-size:10px; vertical-align:middle; }
+  .garden { position:relative; aspect-ratio:1; max-width:420px; margin-left:auto; }
+  .garden svg { width:100%; height:100%; overflow:visible; }
+  /* sections */
+  section { padding:56px 0; border-top:1px solid var(--line); }
+  .sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:26px; flex-wrap:wrap; }
+  .sec-head h2 { font-size:34px; }
+  .sec-head p { margin:0; color:var(--muted); }
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
+  .card { background:var(--bg-2); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; min-width:0; }
+  .card .thumb { aspect-ratio:3/2; overflow:hidden; background:var(--chip); }
+  .card .thumb img { width:100%; height:100%; object-fit:cover; transition:transform .3s; }
+  .card:hover .thumb img { transform:scale(1.03); }
+  .card .body { padding:18px 18px 20px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .card h3 { font-size:21px; font-weight:600; }
+  .card p { margin:0; color:var(--muted); font-size:15px; flex:1; }
+  .tags { display:flex; gap:6px; flex-wrap:wrap; }
+  .tag { font-size:12px; font-weight:600; background:var(--chip); color:var(--moss-ink); padding:4px 9px; border-radius:999px; }
+  .card .actions { display:flex; gap:12px; font-size:14px; font-weight:600; margin-top:4px; }
+  .card .actions a { text-decoration:none; }
+  .card .actions a::after { content:" ↗"; opacity:.6; }
+  /* about */
+  .about { display:grid; grid-template-columns:1.1fr .9fr; gap:40px; }
+  .about p { margin:0 0 14px; font-size:17px; }
+  .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chip { background:var(--bg-2); border:1px solid var(--line); padding:7px 13px; border-radius:999px; font-size:14px; font-weight:500; }
+  .how { background:var(--bg-2); border:1px solid var(--line); border-radius:22px; padding:22px 24px; }
+  .how h3 { font-size:20px; margin-bottom:10px; }
+  .how ol { margin:0; padding-left:20px; color:var(--muted); font-size:15px; }
+  .how li { margin:8px 0; }
+  .how li b { color:var(--ink); font-weight:600; }
+  /* contact */
+  .contact { background:var(--bg-2); border:1px solid var(--line); border-radius:28px; padding:36px; display:grid; grid-template-columns:1.2fr .8fr; gap:30px; align-items:center; }
+  .contact h2 { font-size:34px; margin-bottom:8px; }
+  .contact p { margin:0 0 20px; color:var(--muted); font-size:17px; }
+  .contact .cta { display:flex; gap:12px; flex-wrap:wrap; }
+  .dl { border:1.5px dashed var(--line); border-radius:18px; padding:20px; }
+  .dl h3 { font-size:18px; margin-bottom:6px; }
+  .dl p { font-size:14px; margin-bottom:14px; }
+  footer { padding:30px 0 50px; color:var(--muted); font-size:14px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  footer a { color:inherit; }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns:minmax(0,1fr); padding:44px 0 40px; }
+    .garden { max-width:260px; margin:0; }
+    .grid { grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .about, .contact { grid-template-columns:minmax(0,1fr); }
+    nav .links { display:none; }
+  }
+  @media (max-width: 520px) { .grid { grid-template-columns:minmax(0,1fr); } .contact { padding:24px; } }
+  /* print sheet */
+  body.print { background:#fff; color:#1e1d1a; }
+  body.print nav, body.print .hero, body.print #projects, body.print #about, body.print #contact, body.print footer { display:none; }
+  .sheet { width:8.5in; min-height:11in; padding:.55in .6in; font-size:11.5px; }
+  .sheet .top { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid #2b2a26; padding-bottom:10px; margin-bottom:14px; }
+  .sheet h1 { font-size:26px; }
+  .sheet .top p { margin:3px 0 0; color:#555; }
+  .sheet .links { text-align:right; color:#555; line-height:1.5; }
+  .sheet .items { display:grid; grid-template-columns:1fr 1fr; gap:12px 18px; }
+  .sheet .item { display:grid; grid-template-columns:96px 1fr; gap:10px; align-items:start; }
+  .sheet .item img { width:96px; aspect-ratio:3/2; object-fit:cover; border-radius:8px; border:1px solid #ddd; }
+  .sheet .item h3 { font-size:13.5px; margin:0 0 2px; }
+  .sheet .item p { margin:0 0 3px; color:#444; }
+  .sheet .item a { color:#2d7a43; text-decoration:none; word-break:break-all; }
+  .sheet .foot { margin-top:16px; padding-top:8px; border-top:1px solid #ddd; color:#666; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <a class="brand" href="#top" aria-label="Eniola Olaleye">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11"/><path d="M12 14c-5 0-7-3-7-7 4 0 7 2 7 7z"/><path d="M12 11c0-5 3-7 7-7 0 4-2 7-7 7z"/><path d="M7 21h10"/></svg>
+    Eniola Olaleye
+  </a>
+  <div class="links"><a href="#projects">Projects</a><a href="#about">About</a><a href="#contact">Contact</a><a href="eniola-projects.pdf" download>Project sheet (PDF)</a></div>
+</div></nav>
+
+<header id="top" class="wrap hero">
+  <div>
+    <h1>Hi, I'm Eniola.<br>I build <em>small, playable things</em> with AI.</h1>
+    <p class="lead">Data scientist and ML engineer (Cornell M.Eng). Day job: causal inference and forecasting. Evenings: this garden of side projects, each one shipped with an AI coding agent at my side and tested until it actually works.</p>
+    <div class="cta">
+      <a class="btn primary" href="#projects">See the projects</a>
+      <a class="btn ghost" href="https://app.joinhandshake.com/profiles/8swbnk" target="_blank" rel="noopener">Message me on Handshake</a>
+    </div>
+    <div class="fact"><span>6 projects, all live</span><span>Python · SQL · ML · JavaScript</span><span>Based in New York</span></div>
+  </div>
+  <div class="garden" aria-hidden="true">
+    <svg viewBox="0 0 200 200">
+      <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3d6"/><stop offset="1" stop-color="#dfeee2"/></linearGradient></defs>
+      <circle cx="100" cy="100" r="96" fill="url(#sky)"/>
+      <circle cx="146" cy="58" r="18" fill="#f2c14e"/>
+      <g stroke="#2b2a26" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M30 150 h140" fill="none"/>
+        <!-- fence -->
+        <path d="M34 150V122l5-6 5 6v28M58 150V122l5-6 5 6v28M44 130h14M44 140h14" fill="#fff" />
+        <!-- pot mascot -->
+        <path d="M112 112 Q130 104 148 112 Z" fill="#5b3a22"/>
+        <path d="M114 118 L146 118 L142 150 L118 150 Z" fill="#d97d4f"/>
+        <rect x="109" y="112" width="42" height="9" rx="4" fill="#e69060"/>
+        <path d="M130 108 V88" stroke="#4c9a56" stroke-width="5"/>
+        <path d="M130 100 C116 102 110 92 112 80 C124 80 130 88 130 100Z" fill="#5fb46a"/>
+        <path d="M130 94 C131 80 140 74 150 76 C150 88 142 96 130 94Z" fill="#79c884"/>
+        <circle cx="124" cy="132" r="2.4" fill="#2b2a26" stroke="none"/><circle cx="136" cy="132" r="2.4" fill="#2b2a26" stroke="none"/>
+        <path d="M125 140 q5 5 10 0" fill="none" stroke-width="2.4"/>
+        <!-- sprouts -->
+        <path d="M80 150 V132" stroke="#4c9a56" stroke-width="4"/><path d="M80 140 C72 140 68 134 70 126 C78 126 82 132 80 140Z" fill="#5fb46a"/>
+        <path d="M96 150 V138" stroke="#4c9a56" stroke-width="4"/><path d="M96 144 C102 144 106 138 104 132 C98 132 94 136 96 144Z" fill="#79c884"/>
+      </g>
+      <!-- moon from ThoughtPark -->
+      <path d="M58 60 a12 12 0 1 0 12 14 a9 9 0 0 1 -12 -14z" fill="#f2c14e" opacity=".9"/>
+    </svg>
+  </div>
+</header>
+
+<section id="projects"><div class="wrap">
+  <div class="sec-head"><h2>Projects</h2><p>Six things you can open right now. Each was built with an AI coding agent, then played, clicked and screenshot-tested until it held up.</p></div>
+  <div class="grid">
+    <article class="card">
+      <div class="thumb"><img src="img/fence.jpg" alt="Fence Off game board"></div>
+      <div class="body"><h3>Fence Off</h3><p>2–4 player dots-and-boxes you play with friends on their own phones. No accounts, no server: room codes, QR join, peer-to-peer over WebRTC with the host as referee.</p>
+        <div class="tags"><span class="tag">Multiplayer</span><span class="tag">WebRTC</span><span class="tag">Vanilla JS</span></div>
+        <div class="actions"><a href="https://eniolagalileo-expert.github.io/thoughtpark/fence-off/" target="_blank" rel="noopener">Play</a><a href="https://app.joinhandshake.com/ai-showcase/projects/3663814" target="_blank" rel="noopener">Showcase</a></div></div>
+    </article>
+    <article class="card">
+      <div class="thumb"><img src="img/thoughtpark.jpg" alt="ThoughtPark welcome screen"></div>
+      <div class="body"><h3>ThoughtPark</h3><p>A bedtime app for parking the thoughts that keep you up. Type or say each one, let a calm AI companion file it, and find it waiting in the morning.</p>
+        <div class="tags"><span class="tag">Web app</span><span class="tag">Claude API</span><span class="tag">Voice</span></div>
+        <div class="actions"><a href="https://eniolagalileo-expert.github.io/thoughtpark-app/" target="_blank" rel="noopener">Open</a><a href="https://github.com/eniolagalileo-expert/thoughtpark-app" target="_blank" rel="noopener">Source</a></div></div>
+    </article>
+    <article class="card">
+      <div class="thumb"><img src="img/sprout.jpg" alt="Sprout app design kit"></div>
+      <div class="body"><h3>Sprout design kit</h3><p>Mood board, written design brief and four clickable phone screens for a plant-care app. Tokens, type and shape rules live in one file so every screen agrees.</p>
+        <div class="tags"><span class="tag">Product design</span><span class="tag">Prototype</span></div>
+        <div class="actions"><a href="https://eniolagalileo-expert.github.io/thoughtpark/sprout-design-kit/" target="_blank" rel="noopener">Open</a><a href="https://app.joinhandshake.com/ai-showcase/projects/3672939" target="_blank" rel="noopener">Showcase</a></div></div>
+    </article>
+    <article class="card">
+      <div class="thumb"><img src="img/icons.jpg" alt="Garden icons: fence, sprout, trophy, rematch"></div>
+      <div class="body"><h3>Garden Icons</h3><p>Four animated line icons (fence, sprout, trophy, rematch) that draw themselves in and loop in sync. One keyframe set, every path normalised to the same length.</p>
+        <div class="tags"><span class="tag">Motion</span><span class="tag">SVG</span><span class="tag">CSS</span></div>
+        <div class="actions"><a href="https://app.joinhandshake.com/ai-showcase/projects/3672856" target="_blank" rel="noopener">Showcase</a></div></div>
+    </article>
+    <article class="card">
+      <div class="thumb"><img src="img/pip.jpg" alt="Pip the Sprout sticker"></div>
+      <div class="body"><h3>Pip the Sprout</h3><p>A mascot that went from pencil sketch to four finished stickers: die-cut, kawaii, retro badge and holographic, all generated from one set of shapes.</p>
+        <div class="tags"><span class="tag">Illustration</span><span class="tag">Stickers</span></div>
+        <div class="actions"><a href="https://app.joinhandshake.com/ai-showcase/projects/3673585" target="_blank" rel="noopener">Showcase</a></div></div>
+    </article>
+    <article class="card">
+      <div class="thumb"><img src="img/frank.jpg" alt="Frank-H-stein Halloween logo"></div>
+      <div class="body"><h3>Frank-H-stein</h3><p>A Halloween take on the Handshake "H": stitched, bolted and glowing green, delivered as light, dark and single-colour marks for a logo contest.</p>
+        <div class="tags"><span class="tag">Logo</span><span class="tag">Vector</span></div>
+        <div class="actions"><a href="https://app.joinhandshake.com/ai-showcase/projects/3643688" target="_blank" rel="noopener">Showcase</a></div></div>
+    </article>
+  </div>
+</div></section>
+
+<section id="about"><div class="wrap about">
+  <div>
+    <div class="sec-head"><h2>About</h2></div>
+    <p>I'm a machine learning engineer with a Cornell M.Eng in biomedical engineering. Most of my work is quantitative: causal inference, forecasting and the data plumbing that makes them trustworthy.</p>
+    <p>This site is the other half. Small projects are where I learn fastest, and building them with an AI agent has changed what "small" means: a multiplayer game or a full design kit now fits in a weekend, as long as someone keeps testing what the AI claims.</p>
+    <div class="chips"><span class="chip">Python</span><span class="chip">SQL</span><span class="chip">Machine learning</span><span class="chip">Causal inference</span><span class="chip">Forecasting</span><span class="chip">Data science</span><span class="chip">JavaScript</span><span class="chip">Systems engineering</span></div>
+  </div>
+  <div class="how">
+    <h3>How I work with AI</h3>
+    <ol>
+      <li><b>One brief, one source of truth.</b> Facts, tokens and rules go in a single file the agent reads before every change.</li>
+      <li><b>Build in slices.</b> Lobby before gameplay, one screen before four. Each slice gets opened in a real browser.</li>
+      <li><b>Trust nothing until it's clicked.</b> Two tabs playing a full game, screenshots at phone width, a counter that says 494/500.</li>
+      <li><b>Ship to a URL.</b> If it isn't live, it isn't done.</li>
+    </ol>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap"><div class="contact">
+  <div>
+    <h2>Say hello</h2>
+    <p>Looking for data and ML roles, and always up for a conversation about shipping small things well. The fastest way to reach me is a Handshake message; GitHub has the code.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://app.joinhandshake.com/profiles/8swbnk" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Message on Handshake</a>
+      <a class="btn ghost" href="https://github.com/eniolagalileo-expert" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>GitHub</a>
+    </div>
+  </div>
+  <div class="dl">
+    <h3>One-page project sheet</h3>
+    <p>Every project above with its live link, as a PDF you can forward or print.</p>
+    <a class="btn ghost" href="eniola-projects.pdf" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Download PDF</a>
+  </div>
+</div></div></section>
+
+<footer class="wrap"><span>© 2026 Eniola Olaleye. Built by hand and with an AI coding agent, hosted on GitHub Pages.</span><span><a href="#top">Back to top</a></span></footer>
+
+<!-- print sheet (rendered to eniola-projects.pdf with headless Chrome) -->
+<div class="sheet" id="sheet" hidden>
+  <div class="top">
+    <div><h1>Eniola Olaleye</h1><p>Data scientist & ML engineer · Cornell M.Eng · side projects built with AI</p></div>
+    <div class="links">app.joinhandshake.com/profiles/8swbnk<br>github.com/eniolagalileo-expert</div>
+  </div>
+  <div class="items" id="sheet-items"></div>
+  <div class="foot"><span>All projects are live at the links above.</span><span>Updated October 2026</span></div>
+</div>
+<script>
+  const q = new URLSearchParams(location.search);
+  if (q.has('print')) {
+    document.body.classList.add('print');
+    const s = document.getElementById('sheet'); s.hidden = false;
+    s.querySelector('#sheet-items').innerHTML = [...document.querySelectorAll('#projects .card')].map(c => {
+      const img = c.querySelector('img').getAttribute('src');
+      const link = c.querySelector('.actions a');
+      return `<div class="item"><img src="${img}" alt=""><div><h3>${c.querySelector('h3').textContent}</h3><p>${c.querySelector('p').textContent}</p><a href="${link.href}">${link.href.replace('https://','')}</a></div></div>`;
+    }).join('');
+  }
+</script>
+</body>
+</html>
